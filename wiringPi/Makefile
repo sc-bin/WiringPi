@@ -37,12 +37,12 @@ DYNAMIC=libwiringPi.so.$(VERSION)
 #DEBUG	= -g -O0
 DEBUG	= -O2
 CC	?= gcc
-INCLUDE	= -I.
+INCLUDE	= -I. 
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Winline $(INCLUDE) -pipe -fPIC $(EXTRA_CFLAGS)
 #CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Wconversion -Winline $(INCLUDE) -pipe -fPIC
 
-LIBS    = -lm -lpthread -lrt -lcrypt
+LIBS    = -lm -lpthread -lrt -lcrypt  
 
 ###############################################################################
 
@@ -61,11 +61,16 @@ SRC	=	wiringPi.c						\
 		bmp180.c htu21d.c ds18b20.c rht03.c			\
 		drcSerial.c drcNet.c					\
 		pseudoPins.c						\
-		wpiExtensions.c
+		wpiExtensions.c				\
+		wiring-allwinner.c			\
+		wiring-rpi.c				\
+		../board/board.c			\
+		../board/board-aw.c			\
+		../board/board-rpi.c		
 
 HEADERS =	$(shell ls *.h)
 
-OBJ	=	$(SRC:.c=.o)
+OBJ	=	$(SRC:.c=.o) 
 
 all:		$(DYNAMIC)
 

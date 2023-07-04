@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 
 #include <wiringPi.h>
+#include "../board/board.h"
 
 extern int wpMode ;
 
@@ -354,8 +355,7 @@ void doReadall (void)
     return ;
   }
 
-  piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
-
+  RPI_get_model(&model, &rev);
   /**/ if ((model == PI_MODEL_A) || (model == PI_MODEL_B))
     abReadall (model, rev) ;
   else if ((model == PI_MODEL_BP) || (model == PI_MODEL_AP) ||
@@ -367,6 +367,10 @@ void doReadall (void)
     piPlusReadall (model) ;
   else if ((model == PI_MODEL_CM) || (model == PI_MODEL_CM3) || (model == PI_MODEL_CM3P) )
     allReadall () ;
+  else if(model == PI_MODEL_NO_RASPBERRY)
+    // allwinner_Readall();
+  printf("占位,还没写好readall\r\n");
+
   else
     printf ("Oops - unable to determine board type... model: %d\n", model) ;
 }

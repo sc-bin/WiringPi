@@ -41,6 +41,7 @@
 #include <piFace.h>
 
 #include "../version.h"
+#include "../board/board.h"
 
 extern int wiringPiDebug ;
 
@@ -812,8 +813,12 @@ static void doPadDrive (int argc, char *argv [])
 
 static void doUsbP (int argc, char *argv [])
 {
-  int model, rev, mem, maker, overVolted ;
-
+  int model, rev;
+  if( AW_select() >= 0 )
+  {
+    printf("Your board is not a Raspberry Pi, please wait for us to expand support for this feature");
+    return ;
+  }
   if (argc != 3)
   {
     fprintf (stderr, "Usage: %s usbp high|low\n", argv [0]) ;
@@ -821,8 +826,7 @@ static void doUsbP (int argc, char *argv [])
   }
 
 // Make sure we're on a B+
-
-  piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
+  RPI_get_model(&model, &rev);
 
   if (!((model == PI_MODEL_BP) || (model == PI_MODEL_2)))
   {
@@ -1259,7 +1263,6 @@ static void doPwmClock (int argc, char *argv [])
 
 static void doVersion (char *argv [])
 {
-  int model, rev, mem, maker, warranty ;
   struct stat statBuf ;
   char name [80] ;
   FILE *fd ;
@@ -1272,31 +1275,7 @@ static void doVersion (char *argv [])
   printf ("This is free software with ABSOLUTELY NO WARRANTY.\n") ;
   printf ("For details type: %s -warranty\n", argv [0]) ;
   printf ("\n") ;
-  piBoardId (&model, &rev, &mem, &maker, &warranty) ;
-
-  printf ("Raspberry Pi Details:\n") ;
-  printf ("  Type: %s, Revision: %s, Memory: %dMB, Maker: %s %s\n", 
-      piModelNames [model], piRevisionNames [rev], piMemorySize [mem], piMakerNames [maker], warranty ? "[Out of Warranty]" : "") ;
-
-// Check for device tree
-
-  if (stat ("/proc/device-tree", &statBuf) == 0)	// We're on a devtree system ...
-    printf ("  * Device tree is enabled.\n") ;
-
-  if (stat ("/proc/device-tree/model", &statBuf) == 0)	// Output Kernel idea of board type
-  {
-    if ((fd = fopen ("/proc/device-tree/model", "r")) != NULL)
-    {
-      fgets (name, 80, fd) ;
-      fclose (fd) ;
-      printf ("  *--> %s\n", name) ;
-    }
-  }
-
-  if (stat ("/dev/gpiomem", &statBuf) == 0)		// User level GPIO is GO
-    printf ("  * This Raspberry Pi supports user-level GPIO access.\n") ;
-  else
-    printf ("  * Root or sudo required for GPIO access.\n") ;
+  Board_print_Version();
 }
 
 

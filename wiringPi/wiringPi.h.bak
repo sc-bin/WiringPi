@@ -33,7 +33,6 @@
 #  define	FALSE	(!TRUE)
 #endif
 
-extern int wiringPiDebug;
 // GCC warning suppressor
 
 #define	UNU	__attribute__((unused))
@@ -89,6 +88,25 @@ extern int wiringPiDebug;
 //	Intended for the GPIO program Use at your own risk.
 // https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#new-style-revision-codes
 
+#define	PI_MODEL_A		 0
+#define	PI_MODEL_B		 1
+#define	PI_MODEL_AP		 2
+#define	PI_MODEL_BP		 3
+#define	PI_MODEL_2		 4
+#define	PI_ALPHA		 5
+#define	PI_MODEL_CM		 6
+#define	PI_MODEL_07		 7
+#define	PI_MODEL_3B		 8
+#define	PI_MODEL_ZERO		 9
+#define	PI_MODEL_CM3		10
+#define	PI_MODEL_ZERO_W		12
+#define	PI_MODEL_3BP 		13
+#define	PI_MODEL_3AP 		14
+#define	PI_MODEL_CM3P 		16
+#define	PI_MODEL_4B 		17
+#define	PI_MODEL_ZERO_2W	18
+#define	PI_MODEL_400		19
+#define	PI_MODEL_CM4		20
 
 #define	PI_VERSION_1		0
 #define	PI_VERSION_1_1		1
@@ -208,6 +226,7 @@ extern int  wiringPiSetupPiFaceForGpioProg (void) ;	// Don't use this - for gpio
 
 extern          int  piGpioLayout        (void) ;
 extern          int  piBoardRev          (void) ;	// Deprecated
+extern          void piBoardId           (int *model, int *rev, int *mem, int *maker, int *overVolted) ;
 extern          int  wpiPinToGpio        (int wpiPin) ;
 extern          int  physPinToGpio       (int physPin) ;
 extern          void setPadDrive         (int group, int value) ;

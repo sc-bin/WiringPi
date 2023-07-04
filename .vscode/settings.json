@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "01.h": "c",
+        "string.h": "c",
+        "board.h": "c",
+        "stdlib.h": "c",
+        "wiringpi.h": "c",
+        "raspberry.h": "c",
+        "pin_1b.h": "c",
+        "stdint.h": "c",
+        "wiring-allwinner.h": "c",
+        "errno.h": "c",
+        "cstdlib": "c",
+        "stdio.h": "c"
+    }
+}
