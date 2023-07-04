@@ -1098,17 +1098,17 @@ int wpiPinToGpio (int wpiPin)
 }
 
 
-/*
- * physPinToGpio:
- *	Translate a physical Pin number to native GPIO pin number.
- *	Provided for external support.
- *********************************************************************************
- */
+// /*
+//  * physPinToGpio:
+//  *	Translate a physical Pin number to native GPIO pin number.
+//  *	Provided for external support.
+//  *********************************************************************************
+//  */
 
-int physPinToGpio (int physPin)
-{
-  return physToGpio [physPin & 63] ;
-}
+// int physPinToGpio (int physPin)
+// {
+//   return physToGpio [physPin & 63] ;
+// }
 
 
 /*

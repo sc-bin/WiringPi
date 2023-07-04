@@ -218,7 +218,15 @@ static uint8_t gpioToPwmPort [] =
           0,         0,         0,         0,         0,         0,         0,         0,	// 56 -> 63
 
 } ;
-
+static void setupCheck (const char *fName)
+{
+  if (!wiringPiSetuped)
+  {
+    fprintf (stderr, "%s: You have not called one of the wiringPiSetup\n"
+	"  functions, so I'm aborting your program before it crashes anyway.\n", fName) ;
+    exit (EXIT_FAILURE) ;
+  }
+}
 void BCM_pwmWrite (int pin, int value)
 {
    struct wiringPiNodeStruct *node = wiringPiNodes ;

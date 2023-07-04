@@ -240,6 +240,11 @@ static void doLoad (int argc, char *argv [])
   char *file1, *file2 ;
   char args1 [32], args2 [32] ;
 
+  if( Board_select() != BOARD_IS_RPI )
+  {
+    printf("当前板子不是树莓派,此功能仍在施工中\r\n");
+    exit(-1);
+  }
   checkDevTree (argv) ;
 
   if (argc < 3)
@@ -396,12 +401,13 @@ static void doExports (UNU int argc, UNU char *argv [])
   char fName [128] ;
   char buf [16] ;
 
-  for (first = 0, i = 0 ; i < 64 ; ++i)	// Crude, but effective
+  int *gpio_list = Board_get_physToGpio();
+  int gpio_count = Board_get_pin_count();
+  for (first = 0, i = 0 ; i < gpio_count ; ++i)	// Crude, but effective
   {
-
 // Try to read the direction
 
-    sprintf (fName, "/sys/class/gpio/gpio%d/direction", i) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/direction", gpio_list[i]) ;
     if ((fd = open (fName, O_RDONLY)) == -1)
       continue ;
 
@@ -426,7 +432,7 @@ static void doExports (UNU int argc, UNU char *argv [])
 
 // Try to Read the value
 
-    sprintf (fName, "/sys/class/gpio/gpio%d/value", i) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/value", gpio_list[i]) ;
     if ((fd = open (fName, O_RDONLY)) == -1)
     {
       printf ("No Value file (huh?)\n") ;
@@ -444,7 +450,7 @@ static void doExports (UNU int argc, UNU char *argv [])
 
 // Read any edge trigger file
 
-    sprintf (fName, "/sys/class/gpio/gpio%d/edge", i) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/edge", gpio_list[i]) ;
     if ((fd = open (fName, O_RDONLY)) == -1)
     {
       printf ("\n") ;
@@ -695,15 +701,16 @@ void doUnexportall (char *progName)
 {
   FILE *fd ;
   int pin ;
-
-  for (pin = 0 ; pin < 63 ; ++pin)
+  int *gpio_list = Board_get_physToGpio();
+  int gpio_count = Board_get_pin_count();
+  for (pin = 0 ; pin < gpio_count ; ++pin)
   {
     if ((fd = fopen ("/sys/class/gpio/unexport", "w")) == NULL)
     {
       fprintf (stderr, "%s: Unable to open GPIO export interface\n", progName) ;
       exit (1) ;
     }
-    fprintf (fd, "%d\n", pin) ;
+    fprintf (fd, "%d\n", gpio_list[pin]) ;
     fclose (fd) ;
   }
 }

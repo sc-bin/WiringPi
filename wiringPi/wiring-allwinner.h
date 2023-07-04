@@ -26,6 +26,7 @@
 #define PWM_CLK_DIV_72K  12
 
 extern void sunxi_init();
+extern void sunxi_pinMode (int pin, int mode);
 extern int sunxi_gpio_read(int gpio_num);
 extern void sunxi_gpio_write(int gpio_num, int value);
 

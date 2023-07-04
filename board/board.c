@@ -26,7 +26,14 @@ int  Board_select()
     printf("error: you board not support!\r\n");
     exit(-1);
 }
-
+void Board_get_model(int *model, int *rev)
+{
+    Board_select();
+    if (FLAG_Board_IS == BOARD_IS_RPI)
+        RPI_get_model(&model, &rev);
+    else
+        *model = PI_MODEL_NO_RASPBERRY;
+}
 int *Board_get_pinToGpio()
 {
     Board_select();
@@ -43,6 +50,23 @@ int *Board_get_physToGpio()
     else
         return RPI_get_physToGpio();
 }
+int *Board_get_physToWpi()
+{
+    Board_select();
+    if (FLAG_Board_IS == BOARD_IS_AW)
+        return AW_get_physToWpi();
+    else
+        return RPI_get_physToWpi();
+}
+char **Board_get_physName()
+{
+    Board_select();
+    if (FLAG_Board_IS == BOARD_IS_AW)
+        return AW_get_physName();
+    else
+        return RPI_get_physName();
+}
+
 int Board_get_pin_count()
 {
     Board_select();
@@ -56,15 +80,15 @@ void Board_print_Version()
 {
     Board_select();
     if (FLAG_Board_IS == BOARD_IS_AW)
-        return AW_print_Version();
+        AW_print_Version();
     if (FLAG_Board_IS == BOARD_IS_RPI)
-        return RPI_print_Version();
+        RPI_print_Version();
 }
 int Board_get_GpioBase()
 {
     Board_select();
     if (FLAG_Board_IS == BOARD_IS_AW)
-        return AW_get_GpioBase();
+        return AW_get_GpioABase();
     else
         return RPI_get_GpioBase();
 }

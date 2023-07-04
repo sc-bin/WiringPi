@@ -122,7 +122,72 @@ static int physToGpioR2 [64] =
   -1, -1,
   -1, -1,
 } ;
+static int physToWpi [64] =
+{
+  -1,           // 0
+  -1, -1,       // 1, 2
+   8, -1,
+   9, -1,
+   7, 15,
+  -1, 16,
+   0,  1,
+   2, -1,
+   3,  4,
+  -1,  5,
+  12, -1,
+  13,  6,
+  14, 10,
+  -1, 11,       // 25, 26
+  30, 31,	// Actually I2C, but not used
+  21, -1,
+  22, 26,
+  23, -1,
+  24, 27,
+  25, 28,
+  -1, 29,
+  -1, -1,
+  -1, -1,
+  -1, -1,
+  -1, -1,
+  -1, -1,
+  17, 18,
+  19, 20,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1
+} ;
 
+static char *physName_1B [64] =
+{
+  NULL,
+
+  "   3.3v", "5v     ",
+  "  SDA.1", "5v     ",
+  "  SCL.1", "0v     ",
+  "GPIO. 7", "TxD    ",
+  "     0v", "RxD    ",
+  "GPIO. 0", "GPIO. 1",
+  "GPIO. 2", "0v     ",
+  "GPIO. 3", "GPIO. 4",
+  "   3.3v", "GPIO. 5",
+  "   MOSI", "0v     ",
+  "   MISO", "GPIO. 6",
+  "   SCLK", "CE0    ",
+  "     0v", "CE1    ",
+  "  SDA.0", "SCL.0  ",
+  "GPIO.21", "0v     ",
+  "GPIO.22", "GPIO.26",
+  "GPIO.23", "0v     ",
+  "GPIO.24", "GPIO.27",
+  "GPIO.25", "GPIO.28",
+  "     0v", "GPIO.29",
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+  "GPIO.17", "GPIO.18",
+  "GPIO.19", "GPIO.20",
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+} ;
 const char *piModelNames [21] =
 {
   "Model A",	//  0
@@ -340,7 +405,11 @@ int RPI_select()
 {
   return RPI_GpioLayout();
 }
+char *RPI_get_physName()
+{
+  return physName_1B;
 
+}
 int *RPI_get_pinToGpio()
 {
     if (piGpioLayout () == 1)	// A, B, Rev 1, 1.1
@@ -355,6 +424,11 @@ int *RPI_get_physToGpio()
     else 					// A2, B2, A+, B+, CM, Pi2, Pi3, Zero, Zero W, Zero 2 W
         return physToGpioR2 ;
 }
+int *RPI_get_physToWpi()
+{
+    return physToWpi ;
+}
+
 int RPI_get_pin_count()
 {
     return 64;

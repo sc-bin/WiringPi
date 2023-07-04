@@ -341,9 +341,6 @@ static void piGpioLayoutOops (const char *why)
 
 int piGpioLayout (void)
 {
-  FILE *cpuFd ;
-  char line [120] ;
-  char *c ;
   static int  gpioLayout = -1 ;
 
   if (gpioLayout != -1)	// No point checking twice
@@ -419,7 +416,11 @@ void setPadDrive (int group, int value)
 
 int getAlt (int pin)
 {
-  BCM_getAlt (pin);
+  if( Board_select() == BOARD_IS_RPI )
+    return BCM_getAlt (pin);
+  else
+    return sunxi_getAlt(pin);
+  return -1;
 }
 
 
@@ -578,6 +579,7 @@ void pinEnableED01Pi (int pin)
 
 void pinModeAlt (int pin, int mode)
 {
+
   BCM_pinModeAlt (pin, mode);
 }
 
@@ -590,7 +592,11 @@ void pinModeAlt (int pin, int mode)
 
 void pinMode (int pin, int mode)
 {
-  bcm_pinMode (pin, mode);
+  if( Board_select() == BOARD_IS_RPI )
+    bcm_pinMode (pin, mode);
+  if( Board_select() == BOARD_IS_AW )
+    sunxi_pinMode (pin, mode);
+  
 }
 
 

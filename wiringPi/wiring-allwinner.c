@@ -38,7 +38,7 @@ uint32_t GPIOL_BASE;
 static void board_init()
 {
     AW_select();
-    GPIOL_BASE = AW_get_GpioBase();
+    GPIOL_BASE = AW_get_GpioABase();
 }
 
 const char * int2bin(uint32_t param) {
@@ -228,9 +228,8 @@ void sunxi_gpio_write(int pin, int value)
 
     unsigned int regval = 0;
 	
-	if (bank == 11) {
+	if (bank == 11) 
 		phyaddr = GPIOL_BASE + 0x10;
-	}
 	else
 		phyaddr = GPIOL_BASE + (bank * 36) + 0x10;
 
@@ -254,5 +253,129 @@ void sunxi_gpio_write(int pin, int value)
 		}
 
 
+}
+void sunxi_init()
+{
+    ;
+}
+int sunxi_gpio_read(int gpio_num)
+{
     return 0;
+}
+int OrangePi_set_gpio_mode(int pin, int mode)
+{
+    unsigned int regval = 0;
+    unsigned int bank   = pin >> 5;
+    unsigned int index  = pin - (bank << 5);
+    unsigned int phyaddr = 0;
+
+	int offset = ((index - ((index >> 3) << 3)) << 2);
+
+	if (bank == 11) {
+		phyaddr = AW_get_GpioLBase() + ((index >> 3) << 2);
+	}
+	else
+		phyaddr = AW_get_GpioABase() + (bank * 36) + ((index >> 3) << 2);
+
+    /* Ignore unused gpio */
+		regval = readR(phyaddr);
+			if (wiringPiDebug)
+				printf("Before read reg val: 0x%x offset:%d\n",regval,offset);
+        if (wiringPiDebug)
+            printf("Register[%#x]: %#x index:%d\n", phyaddr, regval, index);
+
+        /* Set Input */
+        if(INPUT == mode) {
+
+			regval &= ~(7 << offset);
+			writeR(regval, phyaddr);
+            regval = readR(phyaddr);
+            if (wiringPiDebug)
+                printf("Input mode set over reg val: %#x\n",regval);
+        } else if(OUTPUT == mode) { /* Set Output */
+
+			regval &= ~(7 << offset);
+			regval |=  (1 << offset);
+			if (wiringPiDebug)
+				printf("Out mode ready set val: 0x%x\n",regval);
+			writeR(regval, phyaddr);
+            regval = readR(phyaddr);
+            if (wiringPiDebug)
+                printf("Out mode get value: 0x%x\n",regval);
+        }else if (PWM_OUTPUT == mode) {
+            // set pin PWMx to pwm mode
+            regval &= ~(7 << offset);
+            regval |= (0x3 << offset);
+            if (wiringPiDebug)
+                printf(">>>>>line:%d PWM mode ready to set val: 0x%x\n", __LINE__, regval);
+            writeR(regval, phyaddr);
+            delayMicroseconds(200);
+            regval = readR(phyaddr);
+            if (wiringPiDebug)
+                printf("<<<<<PWM mode set over reg val: 0x%x\n", regval);
+            //clear all reg
+            writeR(0, SUNXI_PWM_CTRL_REG);
+            writeR(0, SUNXI_PWM_CH0_PERIOD);
+
+            //set default M:S to 1/2
+            sunxi_pwm_set_period(1024);
+            sunxi_pwm_set_act(512);
+            pwmSetMode(PWM_MODE_MS);
+            sunxi_pwm_set_clk(PWM_CLK_DIV_120); //default clk:24M/120
+            delayMicroseconds(200);
+        } 
+		else {
+            printf("Unknow mode\n");
+        }
+
+
+    return 0;
+}
+
+
+void sunxi_pinMode (int pin, int mode)
+{
+    struct wiringPiNodeStruct *node = wiringPiNodes ;
+    if (wiringPiDebug)
+        printf("PinMode: pin:%d,mode:%d\n", pin, mode);
+
+    if ((pin & PI_GPIO_MASK) == 0) {
+        if (wiringPiMode == WPI_MODE_PINS)
+            pin = pinToGpio[pin];
+        else if (wiringPiMode == WPI_MODE_PHYS)
+            pin = physToGpio[pin];
+        else if (wiringPiMode != WPI_MODE_GPIO)
+                return;
+        
+        if (-1 == pin) {
+            printf("[%s:L%d] the pin:%d is invaild,please check it over!\n", 
+                        __func__,  __LINE__, pin);
+            return;
+        }
+        
+        if (mode == INPUT) {
+            OrangePi_set_gpio_mode(pin, INPUT);
+            return;
+        } else if (mode == OUTPUT) {
+            OrangePi_set_gpio_mode(pin, OUTPUT);
+            return ;
+        } else if (mode == PWM_OUTPUT) {
+            if(pin != 5) {
+                printf("the pin you choose doesn't support hardware PWM\n");
+                printf("you can select wiringPi pin %d for PWM pin\n", 42);
+                printf("or you can use it in softPwm mode\n");
+                return;
+            }
+            OrangePi_set_gpio_mode(pin, PWM_OUTPUT);
+            return;
+        } else
+            return;
+    } else {
+        if ((node = wiringPiFindNode (pin)) != NULL)
+            node->pinMode(node, pin, mode);
+        return ;
+    }
+
+
+
 }

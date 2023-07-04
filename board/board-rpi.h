@@ -43,6 +43,9 @@ extern int RPI_GpioLayout (void);
 extern int RPI_select();   //-1:当前板子不是树莓派 >=0:树莓派型号宏定义
 extern int *RPI_get_pinToGpio();
 extern int *RPI_get_physToGpio();
+extern int *RPI_get_physToWpi();
+extern char *RPI_get_physName();
+
 extern int RPI_get_pin_count(); //返回当前板子有几个引脚
 
 extern void RPI_get_model(int *model, int *rev);

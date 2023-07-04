@@ -93,6 +93,71 @@ int physToPin_1B [64] =
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   // ... 56
   -1,  // ... 63
 };
+int physToWpi_1B [64] = 
+{
+	-1, 		  // 0
+	-1, -1, 	  // 1, 2
+	 0, -1,
+	 1, -1, 	  
+	 2,  3, 	  //7, 8
+	-1,  4, 	  
+	 5,  6, 	  //11, 12
+	 7, -1, 	  
+	 8,  9, 	  //15, 16
+	-1, 10, 	  
+	11, -1, 	  //19, 20
+	12, 13, 	  
+	14, 15, 	  //23, 24
+	-1, 16, 	  // 25, 26
+	17, 18,
+	19, -1,
+	20, 21,
+	22, -1,
+	23, 24,
+    25, 26,
+    -1, 27,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   // ... 56
+	-1,  // ... 63
+
+};
+char *physName_1B [64] = 
+{
+  	   NULL,
+
+ "    3.3V", "5V      ",
+ "   SDA.1", "5V      ",
+ "   SCL.1", "GND     ",
+ "     PC8", "TXD.2   ",
+ "     GND", "RXD.2   ",
+ "     PC9", "PC10    ",
+ "    PC11", "GND     ",
+ "    PI11", "PI12    ",
+ "    3.3V", "PC14    ",
+ "  MOSI.1", "GND     ",
+ "  MISO.1", "PC15    ",
+ "  SCLK.1", "CS1.0   ",
+ "     GND", "CS1.1   ",
+ "   SDA.2", "SCL.2   ",
+ "     PI0", "GND     ",
+ "     PI1", "PI16    ",
+ "     PI2", "GND     ",
+ "     PI3", "PI15    ",
+ "     PI4", "PI13    ",
+ "     GND", "PI14    ",
+
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       NULL, NULL,
+       
+};
 
 int PIN_MASK_1B[12][32] =  //[BANK]  [INDEX]
 {
@@ -115,13 +180,17 @@ struct BOARD_ONE
     char *model_value;
     int men_size;
 
-    int pin_count;    
+    int pin_count;  
+
+    char **physName;
     int *pinToGpio;
     int *physToGpio;
     int *physToPin;
+    int *physToWpi;
     int *PIN_MASK;
 
-    uint32_t GPIO_BASE;
+    uint32_t GPIOA_BASE;
+    uint32_t GPIOL_BASE;
 };
                    
 
@@ -132,12 +201,15 @@ struct BOARD_ONE pi_boards[] = {
         .men_size = 1024,
 
         .pin_count = 40,
+        .physName = physName_1B,
         .pinToGpio = pinToGpio_1B,
         .physToGpio = physToGpio_1B,
         .physToPin = physToPin_1B,
+        .physToWpi = physToWpi_1B,
         .PIN_MASK = (int *)PIN_MASK_1B,
 
-        .GPIO_BASE = 0x0300B000,
+        .GPIOA_BASE = 0x0300B000,
+        .GPIOL_BASE = 0x0300B000,
 
 
     }
@@ -169,7 +241,7 @@ int AW_select(void)
     {
         if (strcmp(model, pi_boards[i].model_value) == 0)
         {
-            printf("当前板子是: %s\n", pi_boards[i].name);
+            // printf("当前板子是: %s\n", pi_boards[i].name);
             pi_num_in_board = i;
             PI_BOARD = &pi_boards[i];
             return pi_num_in_board;
@@ -185,19 +257,31 @@ int *AW_get_physToGpio()
 {
     return PI_BOARD->physToGpio;
 }
+int *AW_get_physToWpi()
+{
+    return PI_BOARD->physToWpi;
+}
 int AW_get_pin_count()
 {
     return PI_BOARD->pin_count;
+}
+char *AW_get_physName()
+{
+    // printf("AW_get_physName:%x\r\n", PI_BOARD->physName);
+    return PI_BOARD->physName;
 }
 void AW_print_Version()
 {
     printf("Board:\t%s\n\r\n",PI_BOARD->name);
 
 }
-int AW_get_GpioBase()
+int AW_get_GpioABase()
 {
-    return PI_BOARD->GPIO_BASE;
-
+    return PI_BOARD->GPIOA_BASE;
+}
+int AW_get_GpioLBase()
+{
+    return PI_BOARD->GPIOL_BASE;
 }
 int AW_get_GpioPupOffset()
 {
