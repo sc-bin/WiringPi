@@ -11,6 +11,10 @@
         "wiring-allwinner.h": "c",
         "errno.h": "c",
         "cstdlib": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "mman.h": "c",
+        "wait.h": "c",
+        "time.h": "c",
+        "pthread.h": "c"
     }
 }

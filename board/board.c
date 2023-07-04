@@ -5,23 +5,23 @@
 
 static int FLAG_Board_IS = -1;
 
-void Board_select()
+int  Board_select()
 {
     if (FLAG_Board_IS > -1)
-        return;
+        return FLAG_Board_IS;
 
     FLAG_Board_IS = AW_select();
     if (FLAG_Board_IS > -1)
     {
         FLAG_Board_IS = BOARD_IS_AW;
-        return;
+        return FLAG_Board_IS;
     }
 
     FLAG_Board_IS = RPI_select();
     if (FLAG_Board_IS > -1)
     {
         FLAG_Board_IS = BOARD_IS_RPI;
-        return;
+        return FLAG_Board_IS;
     }
     printf("error: you board not support!\r\n");
     exit(-1);

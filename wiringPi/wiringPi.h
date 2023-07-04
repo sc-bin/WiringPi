@@ -245,6 +245,13 @@ extern void         delayMicroseconds (unsigned int howLong) ;
 extern unsigned int millis            (void) ;
 extern unsigned int micros            (void) ;
 
+extern int wiringPiReturnCodes;
+extern int wiringPiMode;
+extern int *pinToGpio ;
+extern int *physToGpio ;
+#define	ENV_DEBUG	"WIRINGPI_DEBUG"
+#define	ENV_CODES	"WIRINGPI_CODES"
+
 #ifdef __cplusplus
 }
 #endif

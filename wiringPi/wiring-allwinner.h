@@ -1,5 +1,6 @@
 #ifndef _WIRING_ALLWINNER_H
 #define _WIRING_ALLWINNER_H
+#include "wiringPi.h"
 
 //sunxi_pwm
 #define SUNXI_PWM_BASE (0x01c21400)
@@ -23,6 +24,10 @@
 #define PWM_CLK_DIV_36K  10
 #define PWM_CLK_DIV_48K  11
 #define PWM_CLK_DIV_72K  12
+
+extern void sunxi_init();
+extern int sunxi_gpio_read(int gpio_num);
+extern void sunxi_gpio_write(int gpio_num, int value);
 
 
 extern void print_pwm_reg(void);

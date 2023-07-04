@@ -38,7 +38,7 @@ uint32_t GPIOL_BASE;
 static void board_init()
 {
     AW_select();
-    // GPIOL_BASE = PI_BOARD->GPIOL_BASE;
+    GPIOL_BASE = AW_get_GpioBase();
 }
 
 const char * int2bin(uint32_t param) {
@@ -217,4 +217,42 @@ void sunxi_pwm_set_act(int act_cys) {
     writeR(act_cys, SUNXI_PWM_CH0_PERIOD);
     delay(1);
     print_pwm_reg();
+}
+
+
+void sunxi_gpio_write(int pin, int value)
+{
+    unsigned int bank   = pin >> 5;
+    unsigned int index  = pin - (bank << 5);
+    unsigned int phyaddr = 0;
+
+    unsigned int regval = 0;
+	
+	if (bank == 11) {
+		phyaddr = GPIOL_BASE + 0x10;
+	}
+	else
+		phyaddr = GPIOL_BASE + (bank * 36) + 0x10;
+
+
+
+		regval = readR(phyaddr);
+		if (wiringPiDebug)
+			printf("befor write reg val: 0x%x,index:%d\n", regval, index);
+		if(0 == value) {
+			regval &= ~(1 << index);
+			writeR(regval, phyaddr);
+			regval = readR(phyaddr);
+			if (wiringPiDebug)
+				printf("LOW val set over reg val: 0x%x\n", regval);
+		} else {
+			regval |= (1 << index);
+			writeR(regval, phyaddr);
+			regval = readR(phyaddr);
+			if (wiringPiDebug)
+				printf("HIGH val set over reg val: 0x%x\n", regval);
+		}
+
+
+    return 0;
 }

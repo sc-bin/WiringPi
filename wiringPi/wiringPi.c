@@ -81,9 +81,7 @@
 #include "wiring-rpi.h"
 // Environment Variables
 
-#define	ENV_DEBUG	"WIRINGPI_DEBUG"
-#define	ENV_CODES	"WIRINGPI_CODES"
-#define	ENV_GPIOMEM	"WIRINGPI_GPIOMEM"
+
 
 
 // Extend wiringPi with other pin-based devices and keep track of
@@ -93,7 +91,6 @@ struct wiringPiNodeStruct *wiringPiNodes = NULL ;
 
 // BCM Magic
 
-#define	BCM_PASSWORD		0x5A000000
 
 
 // The BCM2835 has 54 GPIO pins.
@@ -116,14 +113,6 @@ struct wiringPiNodeStruct *wiringPiNodes = NULL ;
 
 // Port function select bits
 
-#define	FSEL_INPT		0b000
-#define	FSEL_OUTP		0b001
-#define	FSEL_ALT0		0b100
-#define	FSEL_ALT1		0b101
-#define	FSEL_ALT2		0b110
-#define	FSEL_ALT3		0b111
-#define	FSEL_ALT4		0b011
-#define	FSEL_ALT5		0b010
 
 // Access from ARM Running Linux
 //	Taken from Gert/Doms code. Some of this is not in the manual
@@ -132,70 +121,15 @@ struct wiringPiNodeStruct *wiringPiNodes = NULL ;
 // Updates in September 2015 - all now static variables (and apologies for the caps)
 //	due to the Pi v2, v3, etc. and the new /dev/gpiomem interface
 
-static volatile unsigned int GPIO_PADS ;
-static volatile unsigned int GPIO_CLOCK_BASE ;
-static volatile unsigned int GPIO_BASE ;
-static volatile unsigned int GPIO_TIMER ;
-static volatile unsigned int GPIO_PWM ;
+
 
 #define	PAGE_SIZE		(4*1024)
-#define	BLOCK_SIZE		(4*1024)
 
-static unsigned int usingGpioMem    = FALSE ;
+
 static          int wiringPiSetuped = FALSE ;
 static          int wiringPiSysSetuped = FALSE ;
 
-// PWM
-//	Word offsets into the PWM control region
 
-#define	PWM_CONTROL 0
-#define	PWM_STATUS  1
-#define	PWM0_RANGE  4
-#define	PWM0_DATA   5
-#define	PWM1_RANGE  8
-#define	PWM1_DATA   9
-
-//	Clock regsiter offsets
-
-#define	PWMCLK_CNTL	40
-#define	PWMCLK_DIV	41
-
-#define	PWM0_MS_MODE    0x0080  // Run in MS mode
-#define	PWM0_USEFIFO    0x0020  // Data from FIFO
-#define	PWM0_REVPOLAR   0x0010  // Reverse polarity
-#define	PWM0_OFFSTATE   0x0008  // Ouput Off state
-#define	PWM0_REPEATFF   0x0004  // Repeat last value if FIFO empty
-#define	PWM0_SERIAL     0x0002  // Run in serial mode
-#define	PWM0_ENABLE     0x0001  // Channel Enable
-
-#define	PWM1_MS_MODE    0x8000  // Run in MS mode
-#define	PWM1_USEFIFO    0x2000  // Data from FIFO
-#define	PWM1_REVPOLAR   0x1000  // Reverse polarity
-#define	PWM1_OFFSTATE   0x0800  // Ouput Off state
-#define	PWM1_REPEATFF   0x0400  // Repeat last value if FIFO empty
-#define	PWM1_SERIAL     0x0200  // Run in serial mode
-#define	PWM1_ENABLE     0x0100  // Channel Enable
-
-// Timer
-//	Word offsets
-
-#define	TIMER_LOAD	(0x400 >> 2)
-#define	TIMER_VALUE	(0x404 >> 2)
-#define	TIMER_CONTROL	(0x408 >> 2)
-#define	TIMER_IRQ_CLR	(0x40C >> 2)
-#define	TIMER_IRQ_RAW	(0x410 >> 2)
-#define	TIMER_IRQ_MASK	(0x414 >> 2)
-#define	TIMER_RELOAD	(0x418 >> 2)
-#define	TIMER_PRE_DIV	(0x41C >> 2)
-#define	TIMER_COUNTER	(0x420 >> 2)
-
-// Locals to hold pointers to the hardware
-static volatile unsigned int *gpio ;
-static volatile unsigned int *pwm ;
-static volatile unsigned int *clk ;
-static volatile unsigned int *pads ;
-static volatile unsigned int *timer ;
-static volatile unsigned int *timerIrqRaw ;
 
 // Export variables for the hardware pointers
 
@@ -226,7 +160,7 @@ static uint64_t epochMilli, epochMicro ;
 
 // Misc
 
-static int wiringPiMode = WPI_MODE_UNINITIALISED ;
+int wiringPiMode = WPI_MODE_UNINITIALISED ;
 static volatile int    pinPass = -1 ;
 static pthread_mutex_t pinMutex ;
 
@@ -263,72 +197,24 @@ static void (*isrFunctions [64])(void) ;
 //	Take a Wiring pin (0 through X) and re-map it to the BCM_GPIO pin
 //	Cope for 3 different board revisions here.
 
-static int *pinToGpio ;
+int *pinToGpio ;
 
 // physToGpio:
 //	Take a physical pin (1 through 26) and re-map it to the BCM_GPIO pin
 //	Cope for 2 different board revisions here.
 //	Also add in the P5 connector, so the P5 pins are 3,4,5,6, so 53,54,55,56
 
-static int *physToGpio ;
+int *physToGpio ;
 
 // gpioToGPFSEL:
 //	Map a BCM_GPIO pin to it's Function Selection
 //	control port. (GPFSEL 0-5)
 //	Groups of 10 - 3 bits per Function - 30 bits per port
 
-static uint8_t gpioToGPFSEL [] =
-{
-  0,0,0,0,0,0,0,0,0,0,
-  1,1,1,1,1,1,1,1,1,1,
-  2,2,2,2,2,2,2,2,2,2,
-  3,3,3,3,3,3,3,3,3,3,
-  4,4,4,4,4,4,4,4,4,4,
-  5,5,5,5,5,5,5,5,5,5,
-} ;
 
 
-// gpioToShift
-//	Define the shift up for the 3 bits per pin in each GPFSEL port
-
-static uint8_t gpioToShift [] =
-{
-  0,3,6,9,12,15,18,21,24,27,
-  0,3,6,9,12,15,18,21,24,27,
-  0,3,6,9,12,15,18,21,24,27,
-  0,3,6,9,12,15,18,21,24,27,
-  0,3,6,9,12,15,18,21,24,27,
-  0,3,6,9,12,15,18,21,24,27,
-} ;
 
 
-// gpioToGPSET:
-//	(Word) offset to the GPIO Set registers for each GPIO pin
-
-static uint8_t gpioToGPSET [] =
-{
-   7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-   8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-} ;
-
-// gpioToGPCLR:
-//	(Word) offset to the GPIO Clear registers for each GPIO pin
-
-static uint8_t gpioToGPCLR [] =
-{
-  10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
-  11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
-} ;
-
-
-// gpioToGPLEV:
-//	(Word) offset to the GPIO Input level registers for each GPIO pin
-
-static uint8_t gpioToGPLEV [] =
-{
-  13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
-  14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,
-} ;
 
 
 #ifdef notYetReady
@@ -364,96 +250,7 @@ static uint8_t gpioToFEN [] =
 
 static volatile unsigned int piGpioPupOffset = 0 ;
 
-// gpioToPUDCLK
-//	(Word) offset to the Pull Up Down Clock regsiter
 
-static uint8_t gpioToPUDCLK [] =
-{
-  38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,
-  39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,
-} ;
-
-
-// gpioToPwmALT
-//	the ALT value to put a GPIO pin into PWM mode
-
-static uint8_t gpioToPwmALT [] =
-{
-          0,         0,         0,         0,         0,         0,         0,         0,	//  0 ->  7
-          0,         0,         0,         0, FSEL_ALT0, FSEL_ALT0,         0,         0, 	//  8 -> 15
-          0,         0, FSEL_ALT5, FSEL_ALT5,         0,         0,         0,         0, 	// 16 -> 23
-          0,         0,         0,         0,         0,         0,         0,         0,	// 24 -> 31
-          0,         0,         0,         0,         0,         0,         0,         0,	// 32 -> 39
-  FSEL_ALT0, FSEL_ALT0,         0,         0,         0, FSEL_ALT0,         0,         0,	// 40 -> 47
-          0,         0,         0,         0,         0,         0,         0,         0,	// 48 -> 55
-          0,         0,         0,         0,         0,         0,         0,         0,	// 56 -> 63
-} ;
-
-
-// gpioToPwmPort
-//	The port value to put a GPIO pin into PWM mode
-
-static uint8_t gpioToPwmPort [] =
-{
-          0,         0,         0,         0,         0,         0,         0,         0,	//  0 ->  7
-          0,         0,         0,         0, PWM0_DATA, PWM1_DATA,         0,         0, 	//  8 -> 15
-          0,         0, PWM0_DATA, PWM1_DATA,         0,         0,         0,         0, 	// 16 -> 23
-          0,         0,         0,         0,         0,         0,         0,         0,	// 24 -> 31
-          0,         0,         0,         0,         0,         0,         0,         0,	// 32 -> 39
-  PWM0_DATA, PWM1_DATA,         0,         0,         0, PWM1_DATA,         0,         0,	// 40 -> 47
-          0,         0,         0,         0,         0,         0,         0,         0,	// 48 -> 55
-          0,         0,         0,         0,         0,         0,         0,         0,	// 56 -> 63
-
-} ;
-
-// gpioToGpClkALT:
-//	ALT value to put a GPIO pin into GP Clock mode.
-//	On the Pi we can really only use BCM_GPIO_4 and BCM_GPIO_21
-//	for clocks 0 and 1 respectively, however I'll include the full
-//	list for completeness - maybe one day...
-
-#define	GPIO_CLOCK_SOURCE	1
-
-// gpioToGpClkALT0:
-
-static uint8_t gpioToGpClkALT0 [] =
-{
-          0,         0,         0,         0, FSEL_ALT0, FSEL_ALT0, FSEL_ALT0,         0,	//  0 ->  7
-          0,         0,         0,         0,         0,         0,         0,         0, 	//  8 -> 15
-          0,         0,         0,         0, FSEL_ALT5, FSEL_ALT5,         0,         0, 	// 16 -> 23
-          0,         0,         0,         0,         0,         0,         0,         0,	// 24 -> 31
-  FSEL_ALT0,         0, FSEL_ALT0,         0,         0,         0,         0,         0,	// 32 -> 39
-          0,         0, FSEL_ALT0, FSEL_ALT0, FSEL_ALT0,         0,         0,         0,	// 40 -> 47
-          0,         0,         0,         0,         0,         0,         0,         0,	// 48 -> 55
-          0,         0,         0,         0,         0,         0,         0,         0,	// 56 -> 63
-} ;
-
-// gpioToClk:
-//	(word) Offsets to the clock Control and Divisor register
-
-static uint8_t gpioToClkCon [] =
-{
-         -1,        -1,        -1,        -1,        28,        30,        32,        -1,	//  0 ->  7
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1, 	//  8 -> 15
-         -1,        -1,        -1,        -1,        28,        30,        -1,        -1, 	// 16 -> 23
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1,	// 24 -> 31
-         28,        -1,        28,        -1,        -1,        -1,        -1,        -1,	// 32 -> 39
-         -1,        -1,        28,        30,        28,        -1,        -1,        -1,	// 40 -> 47
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1,	// 48 -> 55
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1,	// 56 -> 63
-} ;
-
-static uint8_t gpioToClkDiv [] =
-{
-         -1,        -1,        -1,        -1,        29,        31,        33,        -1,	//  0 ->  7
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1, 	//  8 -> 15
-         -1,        -1,        -1,        -1,        29,        31,        -1,        -1, 	// 16 -> 23
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1,	// 24 -> 31
-         29,        -1,        29,        -1,        -1,        -1,        -1,        -1,	// 32 -> 39
-         -1,        -1,        29,        31,        29,        -1,        -1,        -1,	// 40 -> 47
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1,	// 48 -> 55
-         -1,        -1,        -1,        -1,        -1,        -1,        -1,        -1,	// 56 -> 63
-} ;
 
 
 /*
@@ -504,21 +301,7 @@ static void setupCheck (const char *fName)
   }
 }
 
-/*
- * gpioMemCheck:
- *	See if we're using the /dev/gpiomem interface, if-so then some operations
- *	can't be done and will crash the Pi.
- *********************************************************************************
- */
 
-static void usingGpioMemCheck (const char *what)
-{
-  if (usingGpioMem)
-  {
-    fprintf (stderr, "%s: Unable to do this when using /dev/gpiomem. Try sudo?\n", what) ;
-    exit (EXIT_FAILURE) ;
-  }
-}
 
 
 
@@ -623,22 +406,7 @@ int physPinToGpio (int physPin)
 
 void setPadDrive (int group, int value)
 {
-  uint32_t wrVal ;
-
-  if ((wiringPiMode == WPI_MODE_PINS) || (wiringPiMode == WPI_MODE_PHYS) || (wiringPiMode == WPI_MODE_GPIO))
-  {
-    if ((group < 0) || (group > 2))
-      return ;
-
-    wrVal = BCM_PASSWORD | 0x18 | (value & 7) ;
-    *(pads + group + 11) = wrVal ;
-
-    if (wiringPiDebug)
-    {
-      printf ("setPadDrive: Group: %d, value: %d (%08X)\n", group, value, wrVal) ;
-      printf ("Read : %08X\n", *(pads + group + 11)) ;
-    }
-  }
+  BCM_setPadDrive (group, value);
 }
 
 
@@ -651,23 +419,7 @@ void setPadDrive (int group, int value)
 
 int getAlt (int pin)
 {
-  int fSel, shift, alt ;
-
-  pin &= 63 ;
-
-  /**/ if (wiringPiMode == WPI_MODE_PINS)
-    pin = pinToGpio [pin] ;
-  else if (wiringPiMode == WPI_MODE_PHYS)
-    pin = physToGpio [pin] ;
-  else if (wiringPiMode != WPI_MODE_GPIO)
-    return 0 ;
-
-  fSel    = gpioToGPFSEL [pin] ;
-  shift   = gpioToShift  [pin] ;
-
-  alt = (*(gpio + fSel) >> shift) & 7 ;
-
-  return alt ;
+  BCM_getAlt (pin);
 }
 
 
@@ -679,13 +431,7 @@ int getAlt (int pin)
 
 void pwmSetMode (int mode)
 {
-  if ((wiringPiMode == WPI_MODE_PINS) || (wiringPiMode == WPI_MODE_PHYS) || (wiringPiMode == WPI_MODE_GPIO))
-  {
-    if (mode == PWM_MODE_MS)
-      *(pwm + PWM_CONTROL) = PWM0_ENABLE | PWM1_ENABLE | PWM0_MS_MODE | PWM1_MS_MODE ;
-    else
-      *(pwm + PWM_CONTROL) = PWM0_ENABLE | PWM1_ENABLE ;
-  }
+  BCM_pwmSetMode(mode);
 }
 
 
@@ -698,11 +444,7 @@ void pwmSetMode (int mode)
 
 void pwmSetRange (unsigned int range)
 {
-  if ((wiringPiMode == WPI_MODE_PINS) || (wiringPiMode == WPI_MODE_PHYS) || (wiringPiMode == WPI_MODE_GPIO))
-  {
-    *(pwm + PWM0_RANGE) = range ; delayMicroseconds (10) ;
-    *(pwm + PWM1_RANGE) = range ; delayMicroseconds (10) ;
-  }
+  BCM_pwmSetRange(range);
 }
 
 
@@ -716,46 +458,7 @@ void pwmSetRange (unsigned int range)
 
 void pwmSetClock (int divisor)
 {
-  uint32_t pwm_control ;
-
-  if (piGpioBase == GPIO_PERI_BASE_2711)
-  {
-    divisor = 540*divisor/192;
-  }
-  divisor &= 4095 ;
-
-  if ((wiringPiMode == WPI_MODE_PINS) || (wiringPiMode == WPI_MODE_PHYS) || (wiringPiMode == WPI_MODE_GPIO))
-  {
-    if (wiringPiDebug)
-      printf ("Setting to: %d. Current: 0x%08X\n", divisor, *(clk + PWMCLK_DIV)) ;
-
-    pwm_control = *(pwm + PWM_CONTROL) ;		// preserve PWM_CONTROL
-
-// We need to stop PWM prior to stopping PWM clock in MS mode otherwise BUSY
-// stays high.
-
-    *(pwm + PWM_CONTROL) = 0 ;				// Stop PWM
-
-// Stop PWM clock before changing divisor. The delay after this does need to
-// this big (95uS occasionally fails, 100uS OK), it's almost as though the BUSY
-// flag is not working properly in balanced mode. Without the delay when DIV is
-// adjusted the clock sometimes switches to very slow, once slow further DIV
-// adjustments do nothing and it's difficult to get out of this mode.
-
-    *(clk + PWMCLK_CNTL) = BCM_PASSWORD | 0x01 ;	// Stop PWM Clock
-      delayMicroseconds (110) ;			// prevents clock going sloooow
-
-    while ((*(clk + PWMCLK_CNTL) & 0x80) != 0)	// Wait for clock to be !BUSY
-      delayMicroseconds (1) ;
-
-    *(clk + PWMCLK_DIV)  = BCM_PASSWORD | (divisor << 12) ;
-
-    *(clk + PWMCLK_CNTL) = BCM_PASSWORD | 0x11 ;	// Start PWM clock
-    *(pwm + PWM_CONTROL) = pwm_control ;		// restore PWM_CONTROL
-
-    if (wiringPiDebug)
-      printf ("Set     to: %d. Now    : 0x%08X\n", divisor, *(clk + PWMCLK_DIV)) ;
-  }
+  BCM_pwmSetClock (divisor);
 }
 
 
@@ -767,30 +470,7 @@ void pwmSetClock (int divisor)
 
 void gpioClockSet (int pin, int freq)
 {
-  int divi, divr, divf ;
-
-  pin &= 63 ;
-
-  /**/ if (wiringPiMode == WPI_MODE_PINS)
-    pin = pinToGpio [pin] ;
-  else if (wiringPiMode == WPI_MODE_PHYS)
-    pin = physToGpio [pin] ;
-  else if (wiringPiMode != WPI_MODE_GPIO)
-    return ;
-
-  divi = 19200000 / freq ;
-  divr = 19200000 % freq ;
-  divf = (int)((double)divr * 4096.0 / 19200000.0) ;
-
-  if (divi > 4095)
-    divi = 4095 ;
-
-  *(clk + gpioToClkCon [pin]) = BCM_PASSWORD | GPIO_CLOCK_SOURCE ;		// Stop GPIO Clock
-  while ((*(clk + gpioToClkCon [pin]) & 0x80) != 0)				// ... and wait
-    ;
-
-  *(clk + gpioToClkDiv [pin]) = BCM_PASSWORD | (divi << 12) | divf ;		// Set dividers
-  *(clk + gpioToClkCon [pin]) = BCM_PASSWORD | 0x10 | GPIO_CLOCK_SOURCE ;	// Start Clock
+  BCM_gpioClockSet (pin, freq);
 }
 
 
@@ -898,24 +578,7 @@ void pinEnableED01Pi (int pin)
 
 void pinModeAlt (int pin, int mode)
 {
-  int fSel, shift ;
-
-  setupCheck ("pinModeAlt") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-board pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
-
-    fSel  = gpioToGPFSEL [pin] ;
-    shift = gpioToShift  [pin] ;
-
-    *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | ((mode & 0x7) << shift) ;
-  }
+  BCM_pinModeAlt (pin, mode);
 }
 
 
@@ -927,76 +590,7 @@ void pinModeAlt (int pin, int mode)
 
 void pinMode (int pin, int mode)
 {
-  int    fSel, shift, alt ;
-  struct wiringPiNodeStruct *node = wiringPiNodes ;
-  int origPin = pin ;
-
-  setupCheck ("pinMode") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-board pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
-
-    softPwmStop  (origPin) ;
-    softToneStop (origPin) ;
-
-    fSel    = gpioToGPFSEL [pin] ;
-    shift   = gpioToShift  [pin] ;
-
-    /**/ if (mode == INPUT)
-      *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) ; // Sets bits to zero = input
-    else if (mode == OUTPUT)
-      *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | (1 << shift) ;
-    else if (mode == SOFT_PWM_OUTPUT)
-      softPwmCreate (origPin, 0, 100) ;
-    else if (mode == SOFT_TONE_OUTPUT)
-      softToneCreate (origPin) ;
-    else if (mode == PWM_TONE_OUTPUT)
-    {
-      pinMode (origPin, PWM_OUTPUT) ;	// Call myself to enable PWM mode
-      pwmSetMode (PWM_MODE_MS) ;
-    }
-    else if (mode == PWM_OUTPUT)
-    {
-      if ((alt = gpioToPwmALT [pin]) == 0)	// Not a hardware capable PWM pin
-	return ;
-
-      usingGpioMemCheck ("pinMode PWM") ;
-
-// Set pin to PWM mode
-
-      *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | (alt << shift) ;
-      delayMicroseconds (110) ;		// See comments in pwmSetClockWPi
-
-      pwmSetMode  (PWM_MODE_BAL) ;	// Pi default mode
-      pwmSetRange (1024) ;		// Default range of 1024
-      pwmSetClock (32) ;		// 19.2 / 32 = 600KHz - Also starts the PWM
-    }
-    else if (mode == GPIO_CLOCK)
-    {
-      if ((alt = gpioToGpClkALT0 [pin]) == 0)	// Not a GPIO_CLOCK pin
-	return ;
-
-      usingGpioMemCheck ("pinMode CLOCK") ;
-
-// Set pin to GPIO_CLOCK mode and set the clock frequency to 100KHz
-
-      *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | (alt << shift) ;
-      delayMicroseconds (110) ;
-      gpioClockSet      (pin, 100000) ;
-    }
-  }
-  else
-  {
-    if ((node = wiringPiFindNode (pin)) != NULL)
-      node->pinMode (node, pin, mode) ;
-    return ;
-  }
+  bcm_pinMode (pin, mode);
 }
 
 
@@ -1008,56 +602,7 @@ void pinMode (int pin, int mode)
 
 void pullUpDnControl (int pin, int pud)
 {
-  struct wiringPiNodeStruct *node = wiringPiNodes ;
-
-  setupCheck ("pullUpDnControl") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
-
-    if (piGpioPupOffset == GPPUPPDN0)
-    {
-      // Pi 4B pull up/down method
-      int pullreg = GPPUPPDN0 + (pin>>4);
-      int pullshift = (pin & 0xf) << 1;
-      unsigned int pullbits;
-      unsigned int pull;
-
-      switch (pud)
-      {
-        case PUD_OFF: pull = 0; break;
-        case PUD_UP: pull = 1; break;
-        case PUD_DOWN: pull = 2; break;
-        default: return ; /* An illegal value */
-      }
-
-      pullbits = *(gpio + pullreg);
-      pullbits &= ~(3 << pullshift);
-      pullbits |= (pull << pullshift);
-      *(gpio + pullreg) = pullbits;
-    }
-    else
-    {
-      // legacy pull up/down method
-      *(gpio + GPPUD)              = pud & 3 ;		delayMicroseconds (5) ;
-      *(gpio + gpioToPUDCLK [pin]) = 1 << (pin & 31) ;	delayMicroseconds (5) ;
-
-      *(gpio + GPPUD)              = 0 ;			delayMicroseconds (5) ;
-      *(gpio + gpioToPUDCLK [pin]) = 0 ;			delayMicroseconds (5) ;
-    }
-  }
-  else						// Extension module
-  {
-    if ((node = wiringPiFindNode (pin)) != NULL)
-      node->pullUpDnControl (node, pin, pud) ;
-    return ;
-  }
+  BCM_pullUpDnControl (pin, pud);
 }
 
 
@@ -1076,7 +621,7 @@ int digitalRead (int pin)
     /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)	// Sys mode
     {
       if (sysFds [pin] == -1)
-	return LOW ;
+	      return LOW ;
 
       lseek  (sysFds [pin], 0L, SEEK_SET) ;
       read   (sysFds [pin], &c, 1) ;
@@ -1089,10 +634,10 @@ int digitalRead (int pin)
     else if (wiringPiMode != WPI_MODE_GPIO)
       return LOW ;
 
-    if ((*(gpio + gpioToGPLEV [pin]) & (1 << (pin & 31))) != 0)
-      return HIGH ;
+    if( Board_select() == BOARD_IS_RPI )
+      return BCM_gpio_read(pin);
     else
-      return LOW ;
+      return sunxi_gpio_read(pin) ;
   }
   else
   {
@@ -1153,11 +698,10 @@ void digitalWrite (int pin, int value)
       pin = physToGpio [pin] ;
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
-
-    if (value == LOW)
-      *(gpio + gpioToGPCLR [pin]) = 1 << (pin & 31) ;
+    if( Board_select() == BOARD_IS_RPI )
+      return BCM_gpio_write(pin, value);
     else
-      *(gpio + gpioToGPSET [pin]) = 1 << (pin & 31) ;
+      return sunxi_gpio_write(pin, value);
   }
   else
   {
@@ -1196,27 +740,7 @@ void digitalWrite8 (int pin, int value)
 
 void pwmWrite (int pin, int value)
 {
-  struct wiringPiNodeStruct *node = wiringPiNodes ;
-
-  setupCheck ("pwmWrite") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
-
-    usingGpioMemCheck ("pwmWrite") ;
-    *(pwm + gpioToPwmPort [pin]) = value ;
-  }
-  else
-  {
-    if ((node = wiringPiFindNode (pin)) != NULL)
-      node->pwmWrite (node, pin, value) ;
-  }
+  BCM_pwmWrite(pin, value);
 }
 
 
@@ -1301,61 +825,26 @@ void pwmToneWrite (int pin, int freq)
 
 void digitalWriteByte (const int value)
 {
-  uint32_t pinSet = 0 ;
-  uint32_t pinClr = 0 ;
   int mask = 1 ;
-  int pin ;
+	int pin ;
 
-  /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)
-  {
-    for (pin = 0 ; pin < 8 ; ++pin)
-    {
-      digitalWrite (pinToGpio [pin], value & mask) ;
-      mask <<= 1 ;
-    }
-    return ;
-  }
-  else
-  {
-    for (pin = 0 ; pin < 8 ; ++pin)
-    {
-      if ((value & mask) == 0)
-	pinClr |= (1 << pinToGpio [pin]) ;
-      else
-	pinSet |= (1 << pinToGpio [pin]) ;
-
-      mask <<= 1 ;
-    }
-
-    *(gpio + gpioToGPCLR [0]) = pinClr ;
-    *(gpio + gpioToGPSET [0]) = pinSet ;
-  }
+	for (pin = 0 ; pin < 8 ; ++pin) {
+		digitalWrite (pin, (value >> pin) & mask) ;
+	}
 }
 
 unsigned int digitalReadByte (void)
 {
-  int pin, x ;
-  uint32_t raw ;
-  uint32_t data = 0 ;
+ 	int pin, x ;
+	uint32_t data = 0 ;
 
-  /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)
-  {
-    for (pin = 0 ; pin < 8 ; ++pin)
-    {
-      x = digitalRead (pinToGpio [pin]) ;
-      data = (data << 1) | x ;
-    }
-  }
-  else
-  {
-    raw = *(gpio + gpioToGPLEV [0]) ; // First bank for these pins
-    for (pin = 0 ; pin < 8 ; ++pin)
-    {
-      x = pinToGpio [pin] ;
-      data = (data << 1) | (((raw & (1 << x)) == 0) ? 0 : 1) ;
-    }
-  }
-  return data ;
+	for (pin = 7 ; pin >= 0 ; --pin){
+		x = digitalRead(pin);
+		
+		data = (data << 1) | x ;
+	}
+	
+	return data ;
 }
 
 
@@ -1371,42 +860,26 @@ unsigned int digitalReadByte (void)
 
 void digitalWriteByte2 (const int value)
 {
-  register int mask = 1 ;
-  register int pin ;
+  int mask = 1 ;
+	int pin ;
 
-  /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)
-  {
-    for (pin = 20 ; pin < 28 ; ++pin)
-    {
-      digitalWrite (pin, value & mask) ;
-      mask <<= 1 ;
-    }
-    return ;
-  }
-  else
-  {
-    *(gpio + gpioToGPCLR [0]) = (~value & 0xFF) << 20 ; // 0x0FF00000; ILJ > CHANGE: Old causes glitch
-    *(gpio + gpioToGPSET [0]) = ( value & 0xFF) << 20 ;
-  }
+	for (pin = 8 ; pin < 15 ; ++pin) {
+		digitalWrite (pin, (value >> pin) & mask) ;
+	}
 }
 
 unsigned int digitalReadByte2 (void)
 {
-  int pin, x ;
-  uint32_t data = 0 ;
+  	int pin, x ;
+	uint32_t data = 0 ;
 
-  /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)
-  {
-    for (pin = 20 ; pin < 28 ; ++pin)
-    {
-      x = digitalRead (pin) ;
-      data = (data << 1) | x ;
-    }
-  }
-  else
-    data = ((*(gpio + gpioToGPLEV [0])) >> 20) & 0xFF ; // First bank for these pins
-
-  return data ;
+	for (pin = 15 ; pin >= 8 ; --pin){
+		x = digitalRead(pin);
+		
+		data = (data << 1) | x ;
+	}
+	
+	return data ;
 }
 
 
@@ -1752,8 +1225,6 @@ void wiringPiVersion (int *major, int *minor)
 
 int wiringPiSetup (void)
 {
-  int   fd ;
-  int   model, rev;
 
   if (wiringPiSetuped)
     return 0 ;
@@ -1769,107 +1240,18 @@ int wiringPiSetup (void)
   if (wiringPiDebug)
     printf ("wiringPi: wiringPiSetup called\n") ;
 
-// Get the board ID information. We're not really using the information here,
-//	but it will give us information like the GPIO layout scheme (2 variants
-//	on the older 26-pin Pi's) and the GPIO peripheral base address.
-//	and if we're running on a compute module, then wiringPi pin numbers
-//	don't really many anything, so force native BCM mode anyway.
-
-  RPI_get_model(&model, &rev);
-
-  if ((model == PI_MODEL_CM) ||
-      (model == PI_MODEL_CM3) ||
-      (model == PI_MODEL_CM3P))
-    wiringPiMode = WPI_MODE_GPIO ;
-  else
-    wiringPiMode = WPI_MODE_PINS ;
-
-
+ 
   pinToGpio =  Board_get_pinToGpio() ;
   physToGpio = Board_get_physToGpio() ;
-  
-  piGpioBase = Board_get_GpioBase();
-  piGpioPupOffset = Board_get_GpioPupOffset();
-
-// Open the master /dev/ memory control device
-// Device strategy: December 2016:
-//	Try /dev/mem. If that fails, then
-//	try /dev/gpiomem. If that fails then game over.
-
-  if ((fd = open ("/dev/mem", O_RDWR | O_SYNC | O_CLOEXEC)) < 0)
+ 
+  if(  Board_select() == BOARD_IS_RPI)
   {
-    if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) >= 0)	// We're using gpiomem
-    {
-      piGpioBase   = 0 ;
-      usingGpioMem = TRUE ;
-    }
-    else
-      return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: Unable to open /dev/mem or /dev/gpiomem: %s.\n"
-	"  Aborting your program because if it can not access the GPIO\n"
-	"  hardware then it most certianly won't work\n"
-	"  Try running with sudo?\n", strerror (errno)) ;
+    BCM_setup();
   }
-
-
-
-	/* GPIO */
-	
-// 待修改，这坨地址是pcm特有的
-// Set the offsets into the memory interface.
-
-  GPIO_PADS 	  = piGpioBase + 0x00100000 ;
-  GPIO_CLOCK_BASE = piGpioBase + 0x00101000 ;
-  GPIO_BASE	  = piGpioBase + 0x00200000 ;
-  GPIO_TIMER	  = piGpioBase + 0x0000B000 ;
-  GPIO_PWM	  = piGpioBase + 0x0020C000 ;
-
-// Map the individual hardware components
-
-//	GPIO:
-
-  gpio = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_BASE) ;
-  if (gpio == MAP_FAILED)
-    return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: mmap (GPIO) failed: %s\n", strerror (errno)) ;
-
-//	PWM
-
-  pwm = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_PWM) ;
-  if (pwm == MAP_FAILED)
-    return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: mmap (PWM) failed: %s\n", strerror (errno)) ;
-
-//	Clock control (needed for PWM)
-
-  clk = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_CLOCK_BASE) ;
-  if (clk == MAP_FAILED)
-    return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: mmap (CLOCK) failed: %s\n", strerror (errno)) ;
-
-//	The drive pads
-
-  pads = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_PADS) ;
-  if (pads == MAP_FAILED)
-    return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: mmap (PADS) failed: %s\n", strerror (errno)) ;
-
-//	The system timer
-
-  timer = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_TIMER) ;
-  if (timer == MAP_FAILED)
-    return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: mmap (TIMER) failed: %s\n", strerror (errno)) ;
-
-// Set the timer to free-running, 1MHz.
-//	0xF9 is 249, the timer divide is base clock / (divide+1)
-//	so base clock is 250MHz / 250 = 1MHz.
-
-  *(timer + TIMER_CONTROL) = 0x0000280 ;
-  *(timer + TIMER_PRE_DIV) = 0x00000F9 ;
-  timerIrqRaw = timer + TIMER_IRQ_RAW ;
-
-// Export the base addresses for any external software that might need them
-
-  _wiringPiGpio  = gpio ;
-  _wiringPiPwm   = pwm ;
-  _wiringPiClk   = clk ;
-  _wiringPiPads  = pads ;
-  _wiringPiTimer = timer ;
+  else
+  {
+    sunxi_init();
+  }
 
   initialiseEpoch () ;
 
