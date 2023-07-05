@@ -410,7 +410,7 @@ int RPI_select()
 {
   return RPI_GpioLayout();
 }
-char *RPI_get_physName()
+char **RPI_get_physName()
 {
   return physName_1B;
 
@@ -438,7 +438,7 @@ int RPI_get_pin_count()
 {
     return 64;
 }
-char *RPI_get_alts()
+char **RPI_get_alts()
 {
   return alts;
 }
@@ -652,7 +652,7 @@ static void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty
 void RPI_get_model(int *model, int *rev)
 {
   int  mem, maker, warranty ;
-  piBoardId (&model, &rev, &mem, &maker, &warranty) ;
+  piBoardId (model, rev, &mem, &maker, &warranty) ;
 }
 void RPI_print_Version()
 {

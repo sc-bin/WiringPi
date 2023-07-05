@@ -330,15 +330,6 @@ static void setupCheck (const char *fName)
  *********************************************************************************
  */
 
-static void piGpioLayoutOops (const char *why)
-{
-  fprintf (stderr, "Oops: Unable to determine board revision from /proc/cpuinfo\n") ;
-  fprintf (stderr, " -> %s\n", why) ;
-  fprintf (stderr, " ->  You'd best google the error to find out why.\n") ;
-//fprintf (stderr, " ->  http://www.raspberrypi.org/phpBB3/viewtopic.php?p=184410#p184410\n") ;
-  exit (EXIT_FAILURE) ;
-}
-
 int piGpioLayout (void)
 {
   static int  gpioLayout = -1 ;
@@ -416,8 +407,6 @@ void setPadDrive (int group, int value)
 
 int getAlt (int pin)
 {
-  int fSel, shift, alt ;
-
   pin &= 63 ;
 
   /**/ if (wiringPiMode == WPI_MODE_PINS)
@@ -1264,7 +1253,7 @@ int wiringPiSetup (void)
  
   if(  Board_select() == BOARD_IS_RPI)
   {
-    BCM_setup();
+    return BCM_setup();
   }
   else
   {

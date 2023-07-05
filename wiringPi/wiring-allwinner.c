@@ -74,7 +74,6 @@ void writeR(unsigned int val, unsigned int addr)
 {
     unsigned int mmap_base = (addr & ~MAP_MASK);
     unsigned int mmap_seek = ((addr - mmap_base) >> 2);
-    uint32_t GPIOA_BASE = AW_get_GpioABase();
 
     *(mmap_gpio + mmap_seek) = val;
 }
@@ -275,28 +274,24 @@ void sunxi_init()
 int sunxi_gpio_read(int pin)
 {
 
-	int bank = pin >> 5;
-	int index = pin - (bank << 5);
-	int val;
+    int bank = pin >> 5;
+    int index = pin - (bank << 5);
+    int val;
 
-	unsigned int phyaddr;
-	
-	if (bank == 11) {
-		phyaddr = AW_get_GpioLBase() + 0x10;
-	}
-	else
-		phyaddr = AW_get_GpioABase() + (bank * 36) + 0x10;
+    unsigned int phyaddr;
 
+    if (bank == 11)
+        phyaddr = AW_get_GpioLBase() + 0x10;
+    else
+        phyaddr = AW_get_GpioABase() + (bank * 36) + 0x10;
 
+    if (readR(phyaddr) & GPIO_BIT(index)) /* Input */
+        val = (readR(phyaddr) & GPIO_BIT(index)) ? 1 : 0;
+    else /* Ouput */
+        val = (readR(phyaddr) & GPIO_BIT(index)) ? 1 : 0;
+    return val;
 
-		if (readR(phyaddr) & GPIO_BIT(index))   /* Input */ 
-			val = (readR(phyaddr) & GPIO_BIT(index)) ? 1 : 0;
-		else                                       /* Ouput */
-			val = (readR(phyaddr) & GPIO_BIT(index)) ? 1 : 0;
-		return val;
-
-	return 0;
-
+    return 0;
 }
 void sunxi_pinMode(int pin, int mode)
 {

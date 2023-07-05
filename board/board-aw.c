@@ -252,12 +252,12 @@ int AW_get_pin_count()
 {
     return PI_BOARD->pin_count;
 }
-char *AW_get_physName()
+char **AW_get_physName()
 {
     // printf("AW_get_physName:%x\r\n", PI_BOARD->physName);
     return PI_BOARD->physName;
 }
-char *AW_get_alts()
+char **AW_get_alts()
 {
     return alts;
 }

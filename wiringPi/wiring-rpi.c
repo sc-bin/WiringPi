@@ -45,7 +45,7 @@ static volatile unsigned int *pads ;
 static volatile unsigned int *timer ;
 static volatile unsigned int *timerIrqRaw ;
 
-void BCM_setup()
+int BCM_setup()
 {
       int   fd ;
   int   model, rev;
@@ -81,10 +81,10 @@ void BCM_setup()
       usingGpioMem = TRUE ;
     }
     else
-      return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: Unable to open /dev/mem or /dev/gpiomem: %s.\n"
-	"  Aborting your program because if it can not access the GPIO\n"
-	"  hardware then it most certianly won't work\n"
-	"  Try running with sudo?\n", strerror (errno)) ;
+    return wiringPiFailure (WPI_ALMOST, "wiringPiSetup: Unable to open /dev/mem or /dev/gpiomem: %s.\n"
+    "  Aborting your program because if it can not access the GPIO\n"
+    "  hardware then it most certianly won't work\n"
+    "  Try running with sudo?\n", strerror (errno)) ;
   }
 
 

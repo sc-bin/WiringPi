@@ -59,7 +59,7 @@
 #define	FSEL_ALT5		0b010
 
 
-extern void BCM_setup();
+extern int BCM_setup();
 extern void usingGpioMemCheck (const char *what);
 extern int BCM_gpio_read(int gpio_num);
 extern void BCM_gpio_write(int gpio_num, int value);

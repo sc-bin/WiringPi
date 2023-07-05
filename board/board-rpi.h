@@ -44,8 +44,8 @@ extern int RPI_select();   //-1:当前板子不是树莓派 >=0:树莓派型号�
 extern int *RPI_get_pinToGpio();
 extern int *RPI_get_physToGpio();
 extern int *RPI_get_physToWpi();
-extern char *RPI_get_physName();
-extern char *RPI_get_alts();
+extern char **RPI_get_physName();
+extern char **RPI_get_alts();
 
 extern int RPI_get_pin_count(); //返回当前板子有几个引脚
 

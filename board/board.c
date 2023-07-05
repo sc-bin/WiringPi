@@ -30,7 +30,7 @@ void Board_get_model(int *model, int *rev)
 {
     Board_select();
     if (FLAG_Board_IS == BOARD_IS_RPI)
-        RPI_get_model(&model, &rev);
+        RPI_get_model(model, rev);
     else
         *model = PI_MODEL_NO_RASPBERRY;
 }
