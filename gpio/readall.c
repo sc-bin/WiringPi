@@ -76,10 +76,6 @@ static void doReadallExternal (void)
  *********************************************************************************
  */
 
-static char *alts [] =
-{
-  "IN", "OUT", "ALT5", "ALT4", "ALT0", "ALT1", "ALT2", "ALT3"
-} ;
 
 
 
@@ -116,7 +112,8 @@ static void readallPhys (int physPin)
     else
       pin = phy2wpi[physPin] ;
 
-    printf (" | %4s", alts [getAlt (pin)]) ;
+    // printf ("\r\n getAlt=%d\r\n", getAlt (pin)) ;
+    printf (" | %4s", Board_get_altsName()[getAlt (pin)]) ;
     printf (" | %d", digitalRead (pin)) ;
   }
 
@@ -127,7 +124,6 @@ static void readallPhys (int physPin)
   printf (" || %-2d", physPin) ;
 
 // Same, reversed
-    printf (" |      |  ") ;
   if (phy2gpio [physPin] < 0 )
     printf (" |   |     ") ;
   else
@@ -140,7 +136,7 @@ static void readallPhys (int physPin)
       pin = phy2wpi[physPin] ;
 
     printf (" | %d", digitalRead (pin)) ;
-    printf (" | %-4s", alts [getAlt (pin)]) ;
+    printf (" | %-4s", Board_get_altsName()[getAlt (pin)]) ;
   }
 
   printf (" | %-5s", physname[physPin]) ;
@@ -175,11 +171,11 @@ static void allReadall (void)
   {
     pin = gpio[i];
     printf ("| %3d ", i) ;
-    printf ("| %-4s ", alts [getAlt (i)]) ;
+    printf ("| %-4s ", Board_get_altsName() [getAlt (i)]) ;
     printf ("| %s  ", digitalRead (gpio[i]) == HIGH ? "High" : "Low ") ;
     printf ("|      ") ;
     printf ("| %3d ", i + pin_count) ;
-    printf ("| %-4s ", alts [getAlt (i + pin_count)]) ;
+    printf ("| %-4s ", Board_get_altsName() [getAlt (i + pin_count)]) ;
     printf ("| %s  ", digitalRead (gpio[i+pin_count]) == HIGH ? "High" : "Low ") ;
     printf ("|\n") ;
   }
@@ -360,5 +356,5 @@ void doQmode (int argc, char *argv [])
   }
 
   pin = atoi (argv [2]) ;
-  printf ("%s\n", alts [getAlt (pin)]) ;
+  printf ("%s\n", Board_get_altsName()[getAlt (pin)]) ;
 }

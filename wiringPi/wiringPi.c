@@ -416,6 +416,17 @@ void setPadDrive (int group, int value)
 
 int getAlt (int pin)
 {
+  int fSel, shift, alt ;
+
+  pin &= 63 ;
+
+  /**/ if (wiringPiMode == WPI_MODE_PINS)
+    pin = pinToGpio [pin] ;
+  else if (wiringPiMode == WPI_MODE_PHYS)
+    pin = physToGpio [pin] ;
+  else if (wiringPiMode != WPI_MODE_GPIO)
+    return 0 ;
+
   if( Board_select() == BOARD_IS_RPI )
     return BCM_getAlt (pin);
   else
@@ -622,6 +633,7 @@ int digitalRead (int pin)
 {
   char c ;
   struct wiringPiNodeStruct *node = wiringPiNodes ;
+  
   if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
   {
     /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)	// Sys mode

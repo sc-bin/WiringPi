@@ -1270,10 +1270,6 @@ static void doPwmClock (int argc, char *argv [])
 
 static void doVersion (char *argv [])
 {
-  struct stat statBuf ;
-  char name [80] ;
-  FILE *fd ;
-
   int vMaj, vMin ;
 
   wiringPiVersion (&vMaj, &vMin) ;

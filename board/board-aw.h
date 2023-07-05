@@ -8,6 +8,7 @@ extern int *AW_get_pinToGpio();
 extern int *AW_get_physToGpio();
 extern int *AW_get_physToWpi();
 extern char *AW_get_physName();
+extern char *AW_get_alts();
 
 extern int AW_get_pin_count(); //返回当前板子有几个引脚
 extern void AW_print_Version();

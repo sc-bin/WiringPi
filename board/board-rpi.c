@@ -264,6 +264,11 @@ const int piMemorySize [8] =
      0,		//	 6
      0,		//	 7
 } ;
+static char *alts [] =
+{
+  "IN", "OUT", "ALT5", "ALT4", "ALT0", "ALT1", "ALT2", "ALT3"
+} ;
+
 static void piGpioLayoutOops (const char *why)
 {
   fprintf (stderr, "Oops: Unable to determine board revision from /proc/cpuinfo\n") ;
@@ -432,6 +437,10 @@ int *RPI_get_physToWpi()
 int RPI_get_pin_count()
 {
     return 64;
+}
+char *RPI_get_alts()
+{
+  return alts;
 }
 
 

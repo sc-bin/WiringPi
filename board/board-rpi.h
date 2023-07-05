@@ -45,6 +45,7 @@ extern int *RPI_get_pinToGpio();
 extern int *RPI_get_physToGpio();
 extern int *RPI_get_physToWpi();
 extern char *RPI_get_physName();
+extern char *RPI_get_alts();
 
 extern int RPI_get_pin_count(); //返回当前板子有几个引脚
 

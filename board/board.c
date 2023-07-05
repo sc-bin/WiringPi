@@ -76,6 +76,15 @@ int Board_get_pin_count()
         return RPI_get_pin_count();
     
 }
+char **Board_get_altsName()
+{
+    Board_select();
+    if (FLAG_Board_IS == BOARD_IS_AW)
+        return AW_get_alts();
+    else
+        return RPI_get_alts();
+    
+}
 void Board_print_Version()
 {
     Board_select();

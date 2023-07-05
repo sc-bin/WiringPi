@@ -25,10 +25,14 @@
 #define PWM_CLK_DIV_48K  11
 #define PWM_CLK_DIV_72K  12
 
+#define GPIO_BIT(x)                        (1UL << (x))
+
+
 extern void sunxi_init();
 extern void sunxi_pinMode (int pin, int mode);
-extern int sunxi_gpio_read(int gpio_num);
+extern int sunxi_gpio_read(int pin);
 extern void sunxi_gpio_write(int gpio_num, int value);
+extern int sunxi_getAlt (int pin);
 
 
 extern void print_pwm_reg(void);
