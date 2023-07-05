@@ -222,7 +222,30 @@ void sunxi_pwm_set_act(int act_cys)
     delay(1);
     print_pwm_reg();
 }
+void sunxi_pwmWrite(int gpio_num, int value)
+{
+    int a_val = 0;
 
+    if (pwmmode == 1) // sycle
+        sunxi_pwm_set_mode(1);
+    else
+    {
+        // sunxi_pwm_set_mode(0);
+    }
+    a_val = sunxi_pwm_get_period();
+    if (wiringPiDebug)
+        printf("==> no:%d period now is :%d,act_val to be set:%d\n", __LINE__, a_val, value);
+    if (value > a_val)
+    {
+        printf("val pwmWrite 0 <= X <= 1024\n");
+        printf("Or you can set new range by yourself by pwmSetRange(range\n");
+        return;
+    }
+    // if value changed chang it
+    sunxi_pwm_set_enable(0);
+    sunxi_pwm_set_act(value);
+    sunxi_pwm_set_enable(1);
+}
 void sunxi_gpio_write(int pin, int value)
 {
     unsigned int bank = pin >> 5;
@@ -398,4 +421,80 @@ int sunxi_getAlt(int gpio_num)
     mode = (regval >> offset) & 7;
 
     return mode;
+}
+void sunxi_pullUpDnControl(int gpio_num, int pud)
+{
+    unsigned int regval = 0;
+    unsigned int bank = gpio_num >> 5;
+    unsigned int index = gpio_num - (bank << 5);
+    unsigned int phyaddr = 0;
+    unsigned int bit_value = -1, bit_enable = 0;
+    unsigned int offset;
+    uint32_t GPIOA_BASE = AW_get_GpioABase();
+    uint32_t GPIOL_BASE = AW_get_GpioLBase();
+
+    unsigned int pullOffset = 0x1C;
+    switch (pud)
+    {
+    case PUD_OFF:
+        bit_value = SUNXI_PUD_OFF;
+        break;
+    case PUD_UP:
+        bit_value = SUNXI_PUD_UP;
+        break;
+    case PUD_DOWN:
+        bit_value = SUNXI_PUD_DOWN;
+        break;
+    default:
+        printf("Unknow pull mode\n");
+        return;
+    }
+    offset = ((index - ((index >> 4) << 4)) << 1);
+    pullOffset = 0x1C;
+
+    if (bank == 11)
+    {
+        phyaddr = pullOffset + GPIOL_BASE + ((index >> 4) << 2);
+    }
+    else
+        phyaddr = pullOffset + GPIOA_BASE + (bank * 36) + ((index >> 4) << 2);
+
+    regval = readR(phyaddr);
+    if (wiringPiDebug)
+        printf("read val(%#x) from register[%#x]\n", regval, phyaddr);
+
+    /* clear bit */
+    regval &= ~(3 << offset);
+
+    /* bit write enable*/
+    regval |= bit_enable;
+
+    /* set bit */
+    regval |= (bit_value & 3) << offset;
+
+    writeR(regval, phyaddr);
+    regval = readR(phyaddr);
+
+}
+void sunxi_pinModeAlt(int gpio_num, int mode)
+{
+    
+    unsigned int regval = 0;
+    unsigned int bank = gpio_num >> 5;
+    unsigned int index = gpio_num - (bank << 5);
+    unsigned int phyaddr = 0;
+    int offset = ((index - ((index >> 3) << 3)) << 2);
+    uint32_t GPIOA_BASE = AW_get_GpioABase();
+    uint32_t GPIOL_BASE = AW_get_GpioLBase();
+
+    if (bank == 11)
+        phyaddr = GPIOL_BASE + ((index >> 3) << 2);
+    else
+        phyaddr = GPIOA_BASE + (bank * 36) + ((index >> 3) << 2);
+
+    regval = readR(phyaddr);
+    regval &= ~(7 << offset);
+    regval |= (mode << offset);
+    writeR(regval, phyaddr);
+
 }

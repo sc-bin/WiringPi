@@ -227,29 +227,9 @@ static void setupCheck (const char *fName)
     exit (EXIT_FAILURE) ;
   }
 }
-void BCM_pwmWrite (int pin, int value)
+void BCM_pwmWrite (int gpio_num, int value)
 {
-   struct wiringPiNodeStruct *node = wiringPiNodes ;
-
-  setupCheck ("pwmWrite") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
-
-    usingGpioMemCheck ("pwmWrite") ;
-    *(pwm + gpioToPwmPort [pin]) = value ;
-  }
-  else
-  {
-    if ((node = wiringPiFindNode (pin)) != NULL)
-      node->pwmWrite (node, pin, value) ;
-  }
+    *(pwm + gpioToPwmPort [gpio_num]) = value ;
 }
 void BCM_pwmSetMode (int mode)
 {
@@ -402,26 +382,14 @@ static uint8_t gpioToPUDCLK [] =
 } ;
 
 
-void BCM_pullUpDnControl (int pin, int pud)
+void BCM_pullUpDnControl (int gpio_num, int pud)
 {
-  struct wiringPiNodeStruct *node = wiringPiNodes ;
-
-  setupCheck ("pullUpDnControl") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
-
+  
     if (piGpioPupOffset == GPPUPPDN0)
     {
       // Pi 4B pull up/down method
-      int pullreg = GPPUPPDN0 + (pin>>4);
-      int pullshift = (pin & 0xf) << 1;
+      int pullreg = GPPUPPDN0 + (gpio_num>>4);
+      int pullshift = (gpio_num & 0xf) << 1;
       unsigned int pullbits;
       unsigned int pull;
 
@@ -442,18 +410,11 @@ void BCM_pullUpDnControl (int pin, int pud)
     {
       // legacy pull up/down method
       *(gpio + GPPUD)              = pud & 3 ;		delayMicroseconds (5) ;
-      *(gpio + gpioToPUDCLK [pin]) = 1 << (pin & 31) ;	delayMicroseconds (5) ;
+      *(gpio + gpioToPUDCLK [gpio_num]) = 1 << (gpio_num & 31) ;	delayMicroseconds (5) ;
 
       *(gpio + GPPUD)              = 0 ;			delayMicroseconds (5) ;
-      *(gpio + gpioToPUDCLK [pin]) = 0 ;			delayMicroseconds (5) ;
+      *(gpio + gpioToPUDCLK [gpio_num]) = 0 ;			delayMicroseconds (5) ;
     }
-  }
-  else						// Extension module
-  {
-    if ((node = wiringPiFindNode (pin)) != NULL)
-      node->pullUpDnControl (node, pin, pud) ;
-    return ;
-  }
 }
 void BCM_setPadDrive (int group, int value)
 {
@@ -518,23 +479,35 @@ int BCM_getAlt (int gpio_num)
 void BCM_pinModeAlt (int pin, int mode)
 {
   int fSel, shift ;
-
-  setupCheck ("pinModeAlt") ;
-
-  if ((pin & PI_GPIO_MASK) == 0)		// On-board pin
+  switch(mode)
   {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
+    case 0:
+      mode = 0b100;
+      break;
+    case 1:
+      mode = 0b101;
+      break;
+    case 2:
+      mode = 0b110;
+      break;
+    case 3:
+      mode = 0b111;
+      break;
+    case 4:
+      mode = 0b011;
+      break;
+    case 5:
+      mode = 0b010;
+      break;
+    default:
+      return;
+  }
 
     fSel  = gpioToGPFSEL [pin] ;
     shift = gpioToShift  [pin] ;
 
     *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | ((mode & 0x7) << shift) ;
-  }
+
 }
 // gpioToPwmALT
 //	the ALT value to put a GPIO pin into PWM mode

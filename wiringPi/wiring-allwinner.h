@@ -2,6 +2,10 @@
 #define _WIRING_ALLWINNER_H
 #include "wiringPi.h"
 
+#define SUNXI_PUD_OFF   0
+#define SUNXI_PUD_UP    1
+#define SUNXI_PUD_DOWN  2
+
 //sunxi_pwm
 #define SUNXI_PWM_BASE (0x01c21400)
 #define SUNXI_PWM_CTRL_REG  (SUNXI_PWM_BASE)
@@ -33,7 +37,14 @@ extern void sunxi_pinMode (int gpio_num, int mode);
 extern int sunxi_gpio_read(int gpio_num);
 extern void sunxi_gpio_write(int gpio_num, int value);
 extern int sunxi_getAlt (int gpio_num);
+extern void sunxi_pullUpDnControl (int gpio_num, int pud);
+extern void sunxi_pinModeAlt (int gpio_num, int mode);
 
+
+// extern void BCM_gpioClockSet (int pin, int freq);
+// 
+// extern void BCM_setPadDrive (int group, int value);
+// 
 
 extern void print_pwm_reg(void);
 extern void sunxi_pwm_set_enable(int en);
@@ -43,6 +54,6 @@ extern int sunxi_pwm_get_period(void);
 extern int sunxi_pwm_get_act(void);
 extern void sunxi_pwm_set_period(int period_cys);
 extern void sunxi_pwm_set_act(int act_cys);
-
+extern void sunxi_pwmWrite(int gpio_num, int value);
 
 #endif

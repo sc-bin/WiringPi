@@ -60,20 +60,25 @@
 
 
 extern int BCM_setup();
-extern void usingGpioMemCheck (const char *what);
+extern void bcm_pinMode (int gpio_num, int mode);
 extern int BCM_gpio_read(int gpio_num);
 extern void BCM_gpio_write(int gpio_num, int value);
+extern int BCM_getAlt (int pin);
 
-extern void BCM_pwmWrite(int pin, int value);
+extern void BCM_pullUpDnControl (int gpio_num, int pud);
+
+
+extern void usingGpioMemCheck (const char *what);
+extern void BCM_gpioClockSet (int pin, int freq);
+extern void BCM_setPadDrive (int group, int value);
+extern void BCM_pinModeAlt (int gpio_num, int mode);
+
+
+
+
+extern void BCM_pwmWrite(int gpio_num, int value);
 extern void BCM_pwmSetMode (int mode);
 extern void BCM_pwmSetRange (unsigned int range);
 extern void BCM_pwmSetClock (int divisor);
-extern void BCM_gpioClockSet (int pin, int freq);
-extern void BCM_pullUpDnControl (int pin, int pud);
-extern void BCM_setPadDrive (int group, int value);
-extern int BCM_getAlt (int pin);
-extern void BCM_pinModeAlt (int gpio_num, int mode);
-extern void bcm_pinMode (int gpio_num, int mode);
-
 
 #endif

@@ -432,7 +432,10 @@ int getAlt (int pin)
 
 void pwmSetMode (int mode)
 {
-  BCM_pwmSetMode(mode);
+  if( Board_select() == BOARD_IS_RPI )
+    BCM_pwmSetMode(mode);
+  else
+    sunxi_pwm_set_mode(mode);
 }
 
 
@@ -445,7 +448,10 @@ void pwmSetMode (int mode)
 
 void pwmSetRange (unsigned int range)
 {
-  BCM_pwmSetRange(range);
+  if( Board_select() == BOARD_IS_RPI )
+    BCM_pwmSetRange(range);
+  else
+    sunxi_pwm_set_period(range);
 }
 
 
@@ -459,7 +465,10 @@ void pwmSetRange (unsigned int range)
 
 void pwmSetClock (int divisor)
 {
-  BCM_pwmSetClock (divisor);
+  if( Board_select() == BOARD_IS_RPI )
+    BCM_pwmSetClock (divisor);
+  else
+    sunxi_pwm_set_clk(divisor);
 }
 
 
@@ -579,8 +588,23 @@ void pinEnableED01Pi (int pin)
 
 void pinModeAlt (int pin, int mode)
 {
+  
+  setupCheck ("pinModeAlt") ;
 
-  BCM_pinModeAlt (pin, mode);
+  if ((pin & PI_GPIO_MASK) == 0)		// On-board pin
+  {
+    /**/ if (wiringPiMode == WPI_MODE_PINS)
+      pin = pinToGpio [pin] ;
+    else if (wiringPiMode == WPI_MODE_PHYS)
+      pin = physToGpio [pin] ;
+    else if (wiringPiMode != WPI_MODE_GPIO)
+      return ;
+    if( Board_select() == BOARD_IS_RPI )
+      BCM_pinModeAlt (pin, mode);
+    else
+      sunxi_pinModeAlt(pin, mode);
+
+  }
 }
 
 
@@ -634,7 +658,32 @@ void pinMode (int pin, int mode)
 
 void pullUpDnControl (int pin, int pud)
 {
-  BCM_pullUpDnControl (pin, pud);
+  struct wiringPiNodeStruct *node = wiringPiNodes ;
+
+
+  if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
+  {
+    /**/ if (wiringPiMode == WPI_MODE_PINS)
+      pin = pinToGpio [pin] ;
+    else if (wiringPiMode == WPI_MODE_PHYS)
+      pin = physToGpio [pin] ;
+    else if (wiringPiMode != WPI_MODE_GPIO)
+      return ;
+
+    if( Board_select() == BOARD_IS_RPI )
+      BCM_pullUpDnControl (pin, pud);
+    else
+      sunxi_pullUpDnControl (pin, pud);
+  }
+  else						// Extension module
+  {
+    if ((node = wiringPiFindNode (pin)) != NULL)
+      node->pullUpDnControl (node, pin, pud) ;
+    return ;
+  }
+
+
+
 }
 
 
@@ -773,7 +822,33 @@ void digitalWrite8 (int pin, int value)
 
 void pwmWrite (int pin, int value)
 {
-  BCM_pwmWrite(pin, value);
+    struct wiringPiNodeStruct *node = wiringPiNodes ;
+
+  setupCheck ("pwmWrite") ;
+
+  if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
+  {
+    /**/ if (wiringPiMode == WPI_MODE_PINS)
+      pin = pinToGpio [pin] ;
+    else if (wiringPiMode == WPI_MODE_PHYS)
+      pin = physToGpio [pin] ;
+    else if (wiringPiMode != WPI_MODE_GPIO)
+      return ;
+
+    usingGpioMemCheck ("pwmWrite") ;
+  if(  Board_select() == BOARD_IS_RPI)
+    BCM_pwmWrite(pin, value);
+  else
+    sunxi_pwmWrite(pin, value);
+  }
+  else
+  {
+    if ((node = wiringPiFindNode (pin)) != NULL)
+      node->pwmWrite (node, pin, value) ;
+  }
+
+
+  
 }
 
 
