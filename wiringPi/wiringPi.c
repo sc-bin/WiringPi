@@ -592,10 +592,36 @@ void pinModeAlt (int pin, int mode)
 
 void pinMode (int pin, int mode)
 {
+
+  struct wiringPiNodeStruct *node = wiringPiNodes ;
+  int gpio_num =0;
+
+  setupCheck ("pinMode") ;
+  softPwmStop  (pin) ;
+  softToneStop (pin) ;
+  if ((pin & PI_GPIO_MASK) == 0)		// On-board pin
+  {
+    /**/ if (wiringPiMode == WPI_MODE_PINS)
+      gpio_num = pinToGpio [pin] ;
+    else if (wiringPiMode == WPI_MODE_PHYS)
+      gpio_num = physToGpio [pin] ;
+    else if (wiringPiMode != WPI_MODE_GPIO)
+      return ;
+
   if( Board_select() == BOARD_IS_RPI )
-    bcm_pinMode (pin, mode);
+    bcm_pinMode (gpio_num, mode);
   if( Board_select() == BOARD_IS_AW )
-    sunxi_pinMode (pin, mode);
+    sunxi_pinMode (gpio_num, mode);
+
+  }
+  else
+  {
+    if ((node = wiringPiFindNode (pin)) != NULL)
+      node->pinMode (node, pin, mode) ;
+    return ;
+  }
+
+
   
 }
 

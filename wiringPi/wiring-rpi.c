@@ -501,21 +501,15 @@ static uint8_t gpioToShift [] =
 } ;
 
 
-int BCM_getAlt (int pin)
+int BCM_getAlt (int gpio_num)
 {
   int fSel, shift, alt ;
 
-  pin &= 63 ;
+  gpio_num &= 63 ;
 
-  /**/ if (wiringPiMode == WPI_MODE_PINS)
-    pin = pinToGpio [pin] ;
-  else if (wiringPiMode == WPI_MODE_PHYS)
-    pin = physToGpio [pin] ;
-  else if (wiringPiMode != WPI_MODE_GPIO)
-    return 0 ;
 
-  fSel    = gpioToGPFSEL [pin] ;
-  shift   = gpioToShift  [pin] ;
+  fSel    = gpioToGPFSEL [gpio_num] ;
+  shift   = gpioToShift  [gpio_num] ;
 
   alt = (*(gpio + fSel) >> shift) & 7 ;
 
@@ -558,28 +552,16 @@ static uint8_t gpioToPwmALT [] =
 } ;
 
 
-void bcm_pinMode (int pin, int mode)
+void bcm_pinMode (int gpio_num, int mode)
 {
   int    fSel, shift, alt ;
-  struct wiringPiNodeStruct *node = wiringPiNodes ;
-  int origPin = pin ;
+  int origPin = gpio_num ;
 
   setupCheck ("pinMode") ;
 
-  if ((pin & PI_GPIO_MASK) == 0)		// On-board pin
-  {
-    /**/ if (wiringPiMode == WPI_MODE_PINS)
-      pin = pinToGpio [pin] ;
-    else if (wiringPiMode == WPI_MODE_PHYS)
-      pin = physToGpio [pin] ;
-    else if (wiringPiMode != WPI_MODE_GPIO)
-      return ;
 
-    softPwmStop  (origPin) ;
-    softToneStop (origPin) ;
-
-    fSel    = gpioToGPFSEL [pin] ;
-    shift   = gpioToShift  [pin] ;
+    fSel    = gpioToGPFSEL [gpio_num] ;
+    shift   = gpioToShift  [gpio_num] ;
 
     /**/ if (mode == INPUT)
       *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) ; // Sets bits to zero = input
@@ -596,7 +578,7 @@ void bcm_pinMode (int pin, int mode)
     }
     else if (mode == PWM_OUTPUT)
     {
-      if ((alt = gpioToPwmALT [pin]) == 0)	// Not a hardware capable PWM pin
+      if ((alt = gpioToPwmALT [gpio_num]) == 0)	// Not a hardware capable PWM pin
 	return ;
 
       usingGpioMemCheck ("pinMode PWM") ;
@@ -612,7 +594,7 @@ void bcm_pinMode (int pin, int mode)
     }
     else if (mode == GPIO_CLOCK)
     {
-      if ((alt = gpioToGpClkALT0 [pin]) == 0)	// Not a GPIO_CLOCK pin
+      if ((alt = gpioToGpClkALT0 [gpio_num]) == 0)	// Not a GPIO_CLOCK pin
 	return ;
 
       usingGpioMemCheck ("pinMode CLOCK") ;
@@ -621,13 +603,8 @@ void bcm_pinMode (int pin, int mode)
 
       *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | (alt << shift) ;
       delayMicroseconds (110) ;
-      gpioClockSet      (pin, 100000) ;
+      gpioClockSet      (gpio_num, 100000) ;
     }
-  }
-  else
-  {
-    if ((node = wiringPiFindNode (pin)) != NULL)
-      node->pinMode (node, pin, mode) ;
-    return ;
-  }
+  
+  
 }

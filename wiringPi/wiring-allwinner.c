@@ -271,11 +271,11 @@ void sunxi_init()
 
     wiringPiMode = WPI_MODE_PINS;
 }
-int sunxi_gpio_read(int pin)
+int sunxi_gpio_read(int gpio_num)
 {
 
-    int bank = pin >> 5;
-    int index = pin - (bank << 5);
+    int bank = gpio_num >> 5;
+    int index = gpio_num - (bank << 5);
     int val;
 
     unsigned int phyaddr;
@@ -293,13 +293,11 @@ int sunxi_gpio_read(int pin)
 
     return 0;
 }
-void sunxi_pinMode(int pin, int mode)
+void sunxi_pinMode(int gpio_num, int mode)
 {
-
-    struct wiringPiNodeStruct *node = wiringPiNodes;
     unsigned int regval = 0;
-    unsigned int bank = pin >> 5;
-    unsigned int index = pin - (bank << 5);
+    unsigned int bank = gpio_num >> 5;
+    unsigned int index = gpio_num - (bank << 5);
     unsigned int phyaddr = 0;
 
     int offset = ((index - ((index >> 3) << 3)) << 2);
@@ -312,90 +310,73 @@ void sunxi_pinMode(int pin, int mode)
         phyaddr = AW_get_GpioABase() + (bank * 36) + ((index >> 3) << 2);
 
     regval = readR(phyaddr);
-
     if (wiringPiDebug)
-        printf("PinMode: pin:%d,mode:%d\n", pin, mode);
+        printf("PinMode: pin:%d,mode:%d\n", gpio_num, mode);
 
-    if ((pin & PI_GPIO_MASK) == 0)
+    if (-1 == gpio_num)
     {
-        if (wiringPiMode == WPI_MODE_PINS)
-            pin = pinToGpio[pin];
-        else if (wiringPiMode == WPI_MODE_PHYS)
-            pin = physToGpio[pin];
-        else if (wiringPiMode != WPI_MODE_GPIO)
-            return;
-
-        if (-1 == pin)
-        {
-            printf("[%s:L%d] the pin:%d is invaild,please check it over!\n",
-                   __func__, __LINE__, pin);
-            return;
-        }
-
-        if (mode == INPUT)
-        {
-            regval &= ~(7 << offset);
-            writeR(regval, phyaddr);
-            regval = readR(phyaddr);
-            return;
-        }
-        else if (mode == OUTPUT)
-        {
-            regval &= ~(7 << offset);
-            regval |= (1 << offset);
-
-            writeR(regval, phyaddr);
-            regval = readR(phyaddr);
-
-            return;
-        }
-        else if (mode == PWM_OUTPUT)
-        {
-            if (pin != 5)
-            {
-                printf("the pin you choose doesn't support hardware PWM\n");
-                printf("you can select wiringPi pin %d for PWM pin\n", 42);
-                printf("or you can use it in softPwm mode\n");
-                return;
-            }
-            // set pin PWMx to pwm mode
-            regval &= ~(7 << offset);
-            regval |= (0x3 << offset);
-            if (wiringPiDebug)
-                printf(">>>>>line:%d PWM mode ready to set val: 0x%x\n", __LINE__, regval);
-            writeR(regval, phyaddr);
-            delayMicroseconds(200);
-            regval = readR(phyaddr);
-            if (wiringPiDebug)
-                printf("<<<<<PWM mode set over reg val: 0x%x\n", regval);
-            // clear all reg
-            writeR(0, SUNXI_PWM_CTRL_REG);
-            writeR(0, SUNXI_PWM_CH0_PERIOD);
-
-            // set default M:S to 1/2
-            sunxi_pwm_set_period(1024);
-            sunxi_pwm_set_act(512);
-            pwmSetMode(PWM_MODE_MS);
-            sunxi_pwm_set_clk(PWM_CLK_DIV_120); // default clk:24M/120
-            delayMicroseconds(200);
-
-            return;
-        }
-        else
-            return;
-    }
-    else
-    {
-        if ((node = wiringPiFindNode(pin)) != NULL)
-            node->pinMode(node, pin, mode);
+        printf("[%s:L%d] the pin:%d is invaild,please check it over!\n",
+               __func__, __LINE__, gpio_num);
         return;
     }
+
+    if (mode == INPUT)
+    {
+        regval &= ~(7 << offset);
+        writeR(regval, phyaddr);
+        regval = readR(phyaddr);
+        return;
+    }
+    else if (mode == OUTPUT)
+    {
+        regval &= ~(7 << offset);
+        regval |= (1 << offset);
+
+        writeR(regval, phyaddr);
+        regval = readR(phyaddr);
+
+        return;
+    }
+    else if (mode == PWM_OUTPUT)
+    {
+        if (gpio_num != 5)
+        {
+            printf("the pin you choose doesn't support hardware PWM\n");
+            printf("you can select wiringPi pin %d for PWM pin\n", 42);
+            printf("or you can use it in softPwm mode\n");
+            return;
+        }
+        // set pin PWMx to pwm mode
+        regval &= ~(7 << offset);
+        regval |= (0x3 << offset);
+        if (wiringPiDebug)
+            printf(">>>>>line:%d PWM mode ready to set val: 0x%x\n", __LINE__, regval);
+        writeR(regval, phyaddr);
+        delayMicroseconds(200);
+        regval = readR(phyaddr);
+        if (wiringPiDebug)
+            printf("<<<<<PWM mode set over reg val: 0x%x\n", regval);
+        // clear all reg
+        writeR(0, SUNXI_PWM_CTRL_REG);
+        writeR(0, SUNXI_PWM_CH0_PERIOD);
+
+        // set default M:S to 1/2
+        sunxi_pwm_set_period(1024);
+        sunxi_pwm_set_act(512);
+        pwmSetMode(PWM_MODE_MS);
+        sunxi_pwm_set_clk(PWM_CLK_DIV_120); // default clk:24M/120
+        delayMicroseconds(200);
+
+        return;
+    }
+    else
+        return;
 }
-int sunxi_getAlt(int pin)
+int sunxi_getAlt(int gpio_num)
 {
     unsigned int regval = 0;
-    unsigned int bank = pin >> 5;
-    unsigned int index = pin - (bank << 5);
+    unsigned int bank = gpio_num >> 5;
+    unsigned int index = gpio_num - (bank << 5);
     unsigned int phyaddr = 0;
     unsigned char mode = -1;
     uint32_t GPIOA_BASE = AW_get_GpioABase();

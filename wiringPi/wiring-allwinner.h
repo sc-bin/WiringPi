@@ -29,10 +29,10 @@
 
 
 extern void sunxi_init();
-extern void sunxi_pinMode (int pin, int mode);
-extern int sunxi_gpio_read(int pin);
+extern void sunxi_pinMode (int gpio_num, int mode);
+extern int sunxi_gpio_read(int gpio_num);
 extern void sunxi_gpio_write(int gpio_num, int value);
-extern int sunxi_getAlt (int pin);
+extern int sunxi_getAlt (int gpio_num);
 
 
 extern void print_pwm_reg(void);

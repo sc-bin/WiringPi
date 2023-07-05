@@ -72,8 +72,8 @@ extern void BCM_gpioClockSet (int pin, int freq);
 extern void BCM_pullUpDnControl (int pin, int pud);
 extern void BCM_setPadDrive (int group, int value);
 extern int BCM_getAlt (int pin);
-extern void BCM_pinModeAlt (int pin, int mode);
-extern void bcm_pinMode (int pin, int mode);
+extern void BCM_pinModeAlt (int gpio_num, int mode);
+extern void bcm_pinMode (int gpio_num, int mode);
 
 
 #endif
