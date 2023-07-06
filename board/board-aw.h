@@ -14,5 +14,8 @@ extern int AW_get_pin_count(); //返回当前板子有几个引脚
 extern void AW_print_Version();
 extern int AW_get_GpioABase();
 extern int AW_get_GpioLBase();
-extern int AW_get_GpioPupOffset();
+
+// extern void AW_get_max_HWpwm(); //最大的硬件pwm编号
+// extern int *AW_get_pwmToGpio();
+
 #endif

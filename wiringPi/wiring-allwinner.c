@@ -246,7 +246,7 @@ void sunxi_pwmWrite(int gpio_num, int value)
     sunxi_pwm_set_act(value);
     sunxi_pwm_set_enable(1);
 }
-void sunxi_gpio_write(int pin, int value)
+void SUNXI_gpio_write(int pin, int value)
 {
     unsigned int bank = pin >> 5;
     unsigned int index = pin - (bank << 5);
@@ -279,7 +279,10 @@ void sunxi_gpio_write(int pin, int value)
             printf("HIGH val set over reg val: 0x%x\n", regval);
     }
 }
-void sunxi_init()
+
+
+
+void SUNXI_init()
 {
 
     AW_select();
@@ -294,7 +297,7 @@ void sunxi_init()
 
     wiringPiMode = WPI_MODE_PINS;
 }
-int sunxi_gpio_read(int gpio_num)
+int SUNXI_gpio_read(int gpio_num)
 {
 
     int bank = gpio_num >> 5;
@@ -316,7 +319,7 @@ int sunxi_gpio_read(int gpio_num)
 
     return 0;
 }
-void sunxi_pinMode(int gpio_num, int mode)
+void SUNXI_pin_set_mode(int gpio_num, int mode)
 {
     unsigned int regval = 0;
     unsigned int bank = gpio_num >> 5;
@@ -395,7 +398,7 @@ void sunxi_pinMode(int gpio_num, int mode)
     else
         return;
 }
-int sunxi_getAlt(int gpio_num)
+int SUNXI_pin_get_alt(int gpio_num)
 {
     unsigned int regval = 0;
     unsigned int bank = gpio_num >> 5;
@@ -422,7 +425,7 @@ int sunxi_getAlt(int gpio_num)
 
     return mode;
 }
-void sunxi_pullUpDnControl(int gpio_num, int pud)
+void SUNXI_gpio_set_PullUpDn(int gpio_num, int pud)
 {
     unsigned int regval = 0;
     unsigned int bank = gpio_num >> 5;
@@ -476,7 +479,7 @@ void sunxi_pullUpDnControl(int gpio_num, int pud)
     regval = readR(phyaddr);
 
 }
-void sunxi_pinModeAlt(int gpio_num, int mode)
+void SUNXI_pin_set_alt(int gpio_num, int mode)
 {
     
     unsigned int regval = 0;

@@ -394,7 +394,7 @@ int physPinToGpio (int physPin)
 
 void setPadDrive (int group, int value)
 {
-  BCM_setPadDrive (group, value);
+  BCM_set_PadDrive (group, value);
 }
 
 
@@ -417,9 +417,9 @@ int getAlt (int pin)
     return 0 ;
 
   if( Board_select() == BOARD_IS_RPI )
-    return BCM_getAlt (pin);
+    return BCM_pin_get_alt (pin);
   else
-    return sunxi_getAlt(pin);
+    return SUNXI_pin_get_alt(pin);
   return -1;
 }
 
@@ -455,13 +455,6 @@ void pwmSetRange (unsigned int range)
 }
 
 
-/*
- * pwmSetClock:
- *	Set/Change the PWM clock. Originally my code, but changed
- *	(for the better!) by Chris Hall, <chris@kchall.plus.com>
- *	after further study of the manual and testing with a 'scope
- *********************************************************************************
- */
 
 void pwmSetClock (int divisor)
 {
@@ -600,9 +593,9 @@ void pinModeAlt (int pin, int mode)
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
     if( Board_select() == BOARD_IS_RPI )
-      BCM_pinModeAlt (pin, mode);
+      BCM_pin_set_alt (pin, mode);
     else
-      sunxi_pinModeAlt(pin, mode);
+      SUNXI_pin_set_alt(pin, mode);
 
   }
 }
@@ -633,9 +626,9 @@ void pinMode (int pin, int mode)
       return ;
 
   if( Board_select() == BOARD_IS_RPI )
-    bcm_pinMode (gpio_num, mode);
+    BCM_pin_set_mode (gpio_num, mode);
   if( Board_select() == BOARD_IS_AW )
-    sunxi_pinMode (gpio_num, mode);
+    SUNXI_pin_set_mode (gpio_num, mode);
 
   }
   else
@@ -671,9 +664,9 @@ void pullUpDnControl (int pin, int pud)
       return ;
 
     if( Board_select() == BOARD_IS_RPI )
-      BCM_pullUpDnControl (pin, pud);
+      BCM_gpio_set_PullUpDn (pin, pud);
     else
-      sunxi_pullUpDnControl (pin, pud);
+      SUNXI_gpio_set_PullUpDn (pin, pud);
   }
   else						// Extension module
   {
@@ -719,7 +712,7 @@ int digitalRead (int pin)
     if( Board_select() == BOARD_IS_RPI )
       return BCM_gpio_read(pin);
     else
-      return sunxi_gpio_read(pin) ;
+      return SUNXI_gpio_read(pin) ;
   }
   else
   {
@@ -783,7 +776,7 @@ void digitalWrite (int pin, int value)
     if( Board_select() == BOARD_IS_RPI )
       return BCM_gpio_write(pin, value);
     else
-      return sunxi_gpio_write(pin, value);
+      return SUNXI_gpio_write(pin, value);
   }
   else
   {
@@ -835,7 +828,6 @@ void pwmWrite (int pin, int value)
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
 
-    usingGpioMemCheck ("pwmWrite") ;
   if(  Board_select() == BOARD_IS_RPI)
     BCM_pwmWrite(pin, value);
   else
@@ -1354,11 +1346,11 @@ int wiringPiSetup (void)
  
   if(  Board_select() == BOARD_IS_RPI)
   {
-    return BCM_setup();
+    return BCM_init();
   }
   else
   {
-    sunxi_init();
+    SUNXI_init();
   }
 
   initialiseEpoch () ;

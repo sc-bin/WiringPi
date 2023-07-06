@@ -45,7 +45,7 @@ static volatile unsigned int *pads ;
 static volatile unsigned int *timer ;
 static volatile unsigned int *timerIrqRaw ;
 
-int BCM_setup()
+int BCM_init()
 {
       int   fd ;
   int   model, rev;
@@ -91,7 +91,6 @@ int BCM_setup()
 
 	/* GPIO */
 	
-// 待修改，这坨地址是pcm特有的
 // Set the offsets into the memory interface.
 
   GPIO_PADS 	  = piGpioBase + 0x00100000 ;
@@ -382,7 +381,7 @@ static uint8_t gpioToPUDCLK [] =
 } ;
 
 
-void BCM_pullUpDnControl (int gpio_num, int pud)
+void BCM_gpio_set_PullUpDn (int gpio_num, int pud)
 {
   
     if (piGpioPupOffset == GPPUPPDN0)
@@ -416,7 +415,7 @@ void BCM_pullUpDnControl (int gpio_num, int pud)
       *(gpio + gpioToPUDCLK [gpio_num]) = 0 ;			delayMicroseconds (5) ;
     }
 }
-void BCM_setPadDrive (int group, int value)
+void BCM_set_PadDrive (int group, int value)
 {
   uint32_t wrVal ;
 
@@ -462,7 +461,7 @@ static uint8_t gpioToShift [] =
 } ;
 
 
-int BCM_getAlt (int gpio_num)
+int BCM_pin_get_alt (int gpio_num)
 {
   int fSel, shift, alt ;
 
@@ -476,7 +475,7 @@ int BCM_getAlt (int gpio_num)
 
   return alt ;
 }
-void BCM_pinModeAlt (int pin, int mode)
+void BCM_pin_set_alt (int pin, int mode)
 {
   int fSel, shift ;
   switch(mode)
@@ -525,7 +524,7 @@ static uint8_t gpioToPwmALT [] =
 } ;
 
 
-void bcm_pinMode (int gpio_num, int mode)
+void BCM_pin_set_mode (int gpio_num, int mode)
 {
   int    fSel, shift, alt ;
   int origPin = gpio_num ;

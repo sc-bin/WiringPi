@@ -101,11 +101,3 @@ int Board_get_GpioBase()
     else
         return RPI_get_GpioBase();
 }
-int Board_get_GpioPupOffset()
-{
-    Board_select();
-    if (FLAG_Board_IS == BOARD_IS_AW)
-        return AW_get_GpioPupOffset();
-    else
-        return RPI_get_GpioPupOffset();
-}
