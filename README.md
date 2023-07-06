@@ -1,41 +1,93 @@
-fork��wiringpi���ߣ�������ں����ɵ�֧��
+项目说明
 =================================
+本项目是在[WiringPi](https://github.com/WiringPi/WiringPi)的基础上修改而来
+
+安装本项目到开发板上
+========
+1. 下载到开发板上
+```
+git clone https://github.com/sc-bin/WiringPi.git
+```
+2. 运行脚本，自动编译并安装到板子上
+```
+cd WiringPi
+./build 
+```
+
+玩法一: gpio指令
+========
+安装完成后，在命令行可以输入以`gpio`开头的指令，实现对引脚的控制
+
+查看型号
+------
+------
+```
+gpio -v
+```
+在命令行输入上面的命令，即可输出板子型号版本信息
+
+查看所有引脚的状态
+------
+------
+```
+gpio pins
+```
+命令行输入上面的命令，就会输出一张大表格，其中每一列的含义如下
+- `Physical` : 板上排针的编号
+- `V` : 代表当前引脚的电平状态，1为高电平，0为低电平
+- `Mode` : 这个引脚当前的状态，IN或OUT表示输入输出，ALT数字表示引脚处于复用功能几，OFF则是初始未设置状态
+- `Name` : 引脚名称
+- `wPi` : wpi编号，在本项目内各种需要选择引脚的地方使用
+- `GPIO` : 芯片内部的gpio编号
+
+设置引脚功能
+------
+------
+```
+gpio mode [WpiNum] [mode]
+```
+其中`[WpiNum]`是你要控制引脚的wpi编号，`[mode]`是在下面几种中间选择:
+- `in` : 输入模式
+- `up` : 开启引脚上拉，在配置成输入模式后有效
+- `down` : 开启引脚下拉，在配置成输入模式后有效
+- `out` : 输出模式
+- `alt2`...`alt5` : 设置引脚为第n个复用功能
+
+例如我想把wpi编号为7的引脚设置为上拉输入，则在命令行输入如下两行
+```
+gpio mode 7 in
+gpio mode 7 up
+```
+
+读引脚电平
+------
+------
+```
+gpio read [WpiNum]
+```
+其中`[WpiNum]`是你要控制引脚的wpi编号，例如我想读取wpi编号为7的引脚，就在命令行输入如下
+```
+gpio read 7
+```
 
 
-
-
-
-
-WiringPi (Unofficial Mirror/Fork)
-=================================
-
-This is an unofficial mirror/fork of wiringPi to support ports (Python/Ruby/etc).  With the
-[end of official development](https://web.archive.org/web/20220405225008/http://wiringpi.com/wiringpi-deprecated/), this repository
-has become a mirror of the last "official" source release, plus a fork facilitating updates
-to support newer hardware (primarily for use by the ports) and fix bugs.
-
-  * The final "official" source release can be found at the
-    [`final_source_2.50`](https://github.com/WiringPi/WiringPi/tree/final_official_2.50) tag.
-  * The default `master` branch contains code that has been written since that final source
-    release to provide support for newer hardware.
-
-Ports
------
-
-wiringPi has been wrapped for multiple languages:
-
-* Node - https://github.com/WiringPi/WiringPi-Node
-* Perl - https://github.com/WiringPi/WiringPi-Perl
-* PHP - https://github.com/WiringPi/WiringPi-PHP
-* Python - https://github.com/WiringPi/WiringPi-Python
-* Ruby - https://github.com/WiringPi/WiringPi-Ruby
-
-Support
--------
-
-Please do not email Gordon if you have issues, he will not be able to help.
-
-Pull-requests may be accepted to add or fix support for newer hardware, but new features or
-other changes may not be accepted.
-
-For support, comments, questions, etc please join the WiringPi Discord channel: https://discord.gg/SM4WUVG
+控制引脚输出
+------
+------
+```
+gpio write [WpiNum] [status]
+```
+其中`[WpiNum]`是你要控制引脚的wpi编号，`[status]`为1或0。例如我想让Wpi引脚7输出高电平(需要先设置为输出模式)
+```
+gpio write 7 1
+```
+翻转引脚电平
+------
+------
+```
+gpio toggle [WpiNum]
+```
+让一个处于输出模式的引脚，输出的电平翻转，即7号脚本来输出1，执行完这个命令就会变成0，本来是0，执行完就会变成1。
+```
+gpio toggle 7
+```
