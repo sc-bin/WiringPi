@@ -137,8 +137,9 @@ struct BOARD_ONE
     int *physToGpio;
     int *physToWpi;
 
-    uint32_t GPIOA_BASE;
-    uint32_t GPIOL_BASE;
+    uint32_t mem_gpioA;
+    uint32_t mem_gpioL;
+    uint32_t mem_PWM;
 };
                    
 
@@ -157,8 +158,9 @@ struct BOARD_ONE pi_boards[] = {
         .physToGpio = physToGpio_1B,
         .physToWpi = physToWpi_1B,
 
-        .GPIOA_BASE = 0x0300B000,
-        .GPIOL_BASE = 0x07022000,
+        .mem_gpioA  = 0x0300B000,
+        .mem_gpioL  = 0x07022000,
+        .mem_PWM    = 0x0300A000,
 
 
     }
@@ -230,14 +232,16 @@ void AW_print_Version()
     printf("Board:\t%s\n\r\n",PI_BOARD->name);
 
 }
-int AW_get_GpioABase()
+int AW_get_mem_gpioA()
 {
-    return PI_BOARD->GPIOA_BASE;
+    return PI_BOARD->mem_gpioA;
 }
-int AW_get_GpioLBase()
+int AW_get_mem_gpioL()
 {
-    return PI_BOARD->GPIOL_BASE;
+    return PI_BOARD->mem_gpioL;
 }
 
-extern void AW_get_max_HWpwm(); //最大的硬件pwm编号
-extern int *AW_get_pwmToGpio();
+int AW_get_mem_PWM()
+{
+    return PI_BOARD->mem_PWM;
+}

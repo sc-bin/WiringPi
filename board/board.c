@@ -97,7 +97,7 @@ int Board_get_GpioBase()
 {
     Board_select();
     if (FLAG_Board_IS == BOARD_IS_AW)
-        return AW_get_GpioABase();
+        return AW_get_mem_gpioA();
     else
         return RPI_get_GpioBase();
 }

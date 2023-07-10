@@ -1193,19 +1193,38 @@ void doClock (int argc, char *argv [])
 
 void doPwm (int argc, char *argv [])
 {
-  int pin, val ;
+  int pin, val, freq;
 
-  if (argc != 4)
-  {
-    fprintf (stderr, "Usage: %s pwm <pin> <value>\n", argv [0]) ;
-    exit (1) ;
-  }
+  // if (argc != 4)
+  // {
+  //   fprintf (stderr, "Usage: %s pwm <pin> <value>\n", argv [0]) ;
+  //   exit (1) ;
+  // }
 
   pin = atoi (argv [2]) ;
 
   val = atoi (argv [3]) ;
 
-  pwmWrite (pin, val) ;
+  freq = atoi (argv [4]) ;
+  pwmWrite (pin, val, freq) ;
+}
+
+void doPwmt (int argc, char *argv [])
+{
+  int pin, val1, val2;
+
+  // if (argc != 4)
+  // {
+  //   fprintf (stderr, "Usage: %s pwm <pin> <value>\n", argv [0]) ;
+  //   exit (1) ;
+  // }
+
+  pin = atoi (argv [2]) ;
+
+  val1 = atoi (argv [3]) ;
+
+  val2 = atoi (argv [4]) ;
+  pwmWritet (pin, val1, val2) ;
 }
 
 
@@ -1483,6 +1502,7 @@ int main (int argc, char *argv [])
   /**/ if (strcasecmp (argv [1], "mode"   ) == 0) doMode      (argc, argv) ;
   else if (strcasecmp (argv [1], "read"   ) == 0) doRead      (argc, argv) ;
   else if (strcasecmp (argv [1], "write"  ) == 0) doWrite     (argc, argv) ;
+  else if (strcasecmp (argv [1], "pwmt"    ) == 0) doPwmt       (argc, argv) ;
   else if (strcasecmp (argv [1], "pwm"    ) == 0) doPwm       (argc, argv) ;
   else if (strcasecmp (argv [1], "awrite" ) == 0) doAwrite    (argc, argv) ;
   else if (strcasecmp (argv [1], "aread"  ) == 0) doAread     (argc, argv) ;

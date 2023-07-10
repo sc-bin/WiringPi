@@ -434,8 +434,7 @@ void pwmSetMode (int mode)
 {
   if( Board_select() == BOARD_IS_RPI )
     BCM_pwmSetMode(mode);
-  else
-    sunxi_pwm_set_mode(mode);
+
 }
 
 
@@ -450,8 +449,7 @@ void pwmSetRange (unsigned int range)
 {
   if( Board_select() == BOARD_IS_RPI )
     BCM_pwmSetRange(range);
-  else
-    sunxi_pwm_set_period(range);
+
 }
 
 
@@ -460,8 +458,7 @@ void pwmSetClock (int divisor)
 {
   if( Board_select() == BOARD_IS_RPI )
     BCM_pwmSetClock (divisor);
-  else
-    sunxi_pwm_set_clk(divisor);
+
 }
 
 
@@ -637,9 +634,6 @@ void pinMode (int pin, int mode)
       node->pinMode (node, pin, mode) ;
     return ;
   }
-
-
-  
 }
 
 
@@ -813,7 +807,7 @@ void digitalWrite8 (int pin, int value)
  */
 
 
-void pwmWrite (int pin, int value)
+void pwmWrite (int pin, int value, int freq)
 {
     struct wiringPiNodeStruct *node = wiringPiNodes ;
 
@@ -827,22 +821,35 @@ void pwmWrite (int pin, int value)
       pin = physToGpio [pin] ;
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
-
+  // printf("pwmWrite ")
   if(  Board_select() == BOARD_IS_RPI)
     BCM_pwmWrite(pin, value);
   else
-    sunxi_pwmWrite(pin, value);
+    sunxi_pwmWrite(pin, value, freq);
   }
   else
   {
     if ((node = wiringPiFindNode (pin)) != NULL)
       node->pwmWrite (node, pin, value) ;
   }
+}
+void pwmWritet (int pin, int high_time, int period_time)
+{
 
+    setupCheck ("pwmWrite") ;
+
+
+    /**/ if (wiringPiMode == WPI_MODE_PINS)
+      pin = pinToGpio [pin] ;
+    else if (wiringPiMode == WPI_MODE_PHYS)
+      pin = physToGpio [pin] ;
+    else if (wiringPiMode != WPI_MODE_GPIO)
+      return ;
 
   
+    sunxi_pwmwrite_time(pin, high_time, period_time);
+ 
 }
-
 
 /*
  * analogRead:
@@ -896,12 +903,12 @@ void pwmToneWrite (int pin, int freq)
   setupCheck ("pwmToneWrite") ;
 
   if (freq == 0)
-    pwmWrite (pin, 0) ;             // Off
+    pwmWrite (pin, 0, 0) ;             // Off
   else
   {
     range = 600000 / freq ;
     pwmSetRange (range) ;
-    pwmWrite    (pin, freq / 2) ;
+    pwmWrite    (pin, freq / 2, 0) ;
   }
 }
 
