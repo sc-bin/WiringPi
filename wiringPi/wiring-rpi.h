@@ -59,6 +59,15 @@
 #define	FSEL_ALT5		0b010
 
 
+// Export variables for the hardware pointers
+
+extern volatile unsigned int *_wiringPiGpio ;
+extern volatile unsigned int *_wiringPiPwm ;
+extern volatile unsigned int *_wiringPiClk ;
+extern volatile unsigned int *_wiringPiPads ;
+extern volatile unsigned int *_wiringPiTimer ;
+extern volatile unsigned int *_wiringPiTimerIrqRaw ;
+
 extern int BCM_init();
 extern void BCM_set_PadDrive (int group, int value);
 

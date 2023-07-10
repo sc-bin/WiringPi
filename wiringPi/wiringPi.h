@@ -152,14 +152,8 @@ struct wiringPiNodeStruct
 
 extern struct wiringPiNodeStruct *wiringPiNodes ;
 
-// Export variables for the hardware pointers
 
-extern volatile unsigned int *_wiringPiGpio ;
-extern volatile unsigned int *_wiringPiPwm ;
-extern volatile unsigned int *_wiringPiClk ;
-extern volatile unsigned int *_wiringPiPads ;
-extern volatile unsigned int *_wiringPiTimer ;
-extern volatile unsigned int *_wiringPiTimerIrqRaw ;
+
 
 
 // Function prototypes
@@ -192,8 +186,8 @@ extern          void pinMode             (int pin, int mode) ;
 extern          void pullUpDnControl     (int pin, int pud) ;
 extern          int  digitalRead         (int pin) ;
 extern          void digitalWrite        (int pin, int value) ;
-extern unsigned int  digitalRead8        (int pin) ;
-extern          void digitalWrite8       (int pin, int value) ;
+// extern unsigned int  digitalRead8        (int pin) ;
+// extern          void digitalWrite8       (int pin, int value) ;
 extern          void pwmWrite            (int pin, int value, int freq) ;
 extern          void pwmWritet            (int pin, int high_time, int period_time) ;
 extern          int  analogRead          (int pin) ;
@@ -202,8 +196,8 @@ extern          void analogWrite         (int pin, int value) ;
 // PiFace specifics
 //	(Deprecated)
 
-extern int  wiringPiSetupPiFace (void) ;
-extern int  wiringPiSetupPiFaceForGpioProg (void) ;	// Don't use this - for gpio program only
+// extern int  wiringPiSetupPiFace (void) ;
+// extern int  wiringPiSetupPiFaceForGpioProg (void) ;	// Don't use this - for gpio program only
 
 // On-Board Raspberry Pi hardware specific stuff
 
@@ -252,6 +246,14 @@ extern int *pinToGpio ;
 extern int *physToGpio ;
 #define	ENV_DEBUG	"WIRINGPI_DEBUG"
 #define	ENV_CODES	"WIRINGPI_CODES"
+
+// only in raspberry
+extern          void pwmToneWrite        (int pin, int freq) ;
+extern          void pwmSetMode          (int mode) ;
+extern          void pwmSetRange         (unsigned int range) ;
+extern          void pwmSetClock         (int divisor) ;
+extern          void gpioClockSet        (int pin, int freq) ;
+
 
 #ifdef __cplusplus
 }

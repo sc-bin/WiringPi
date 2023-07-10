@@ -36,7 +36,7 @@ static int fd_mem;
 volatile uint32_t *mmap_gpio;
 volatile uint32_t *mmap_pwm;
 
-void write_mem_pwm(unsigned int val, unsigned int addr)
+void write_mem_pwm(uint32_t val, uint32_t addr)
 {
     unsigned int mmap_base = (addr & ~MAP_MASK);
     unsigned int mmap_seek = ((addr - mmap_base) >> 2);
@@ -119,7 +119,7 @@ void sunxi_pwm_init()
 
 void pwm_set_div(int pwm_num, int div)
 {
-    uint32_t reg, value = 0;
+    uint32_t reg = 0, value = 0;
     if (div < 0 || div > 256)
     {
         printf("div分频系数错误\r\n");
@@ -208,9 +208,9 @@ void sunxi_pwmWrite(int gpio_num, int value, int freq)
     // printf("周期=%dns\r\n", time_period);
 
     int div = 1;
-    int cycle1;
-    int cycle_period;
-    int cycle_k1;
+    int cycle1 = 0;
+    int cycle_period = 0;
+    int cycle_k1 = 0;
     if (pwm_num == 4)
     {
         cycle1 = NS_1s / FREQ_CLOCK * div;
@@ -246,7 +246,6 @@ void sunxi_pwmWrite(int gpio_num, int value, int freq)
 void sunxi_pwmwrite_time(int gpio_num, int high_time, int period_time)
 {
 
-
     int pwm_num = gpio2pwm(gpio_num);
     if (pwm_num < 0)
     {
@@ -270,9 +269,9 @@ void sunxi_pwmwrite_time(int gpio_num, int high_time, int period_time)
     high_time *= 1000;
     period_time *= 1000;
     int div = 1;
-    int cycle1;
-    int cycle_period;
-    int cycle_k1;
+    int cycle1 = 0;
+    int cycle_period = 0;
+    int cycle_k1 = 0;
     if (pwm_num == 4)
     {
         cycle1 = NS_1s / FREQ_CLOCK * div;

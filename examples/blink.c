@@ -26,9 +26,8 @@
 #include <stdio.h>
 #include <wiringPi.h>
 
-// LED Pin - wiringPi pin 0 is BCM_GPIO 17.
 
-#define	LED	0
+#define	LED	9
 
 int main (void)
 {

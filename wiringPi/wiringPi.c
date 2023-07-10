@@ -339,7 +339,7 @@ int piGpioLayout (void)
   if( AW_select() >= 0 )
   {
     gpioLayout = 1;
-    return 1;
+    return 0;
   }
   else
    return RPI_GpioLayout();

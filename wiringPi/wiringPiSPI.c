@@ -109,7 +109,8 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 // Channel can be anything - lets hope for the best
 //  channel &= 1 ;	// Channel is 0 or 1
 
-  snprintf (spiDev, 31, "/dev/spidev0.%d", channel) ;
+  
+  snprintf (spiDev, 31, "/dev/spidev1.%d", channel) ;
 
   if ((fd = open (spiDev, O_RDWR)) < 0)
     return wiringPiFailure (WPI_ALMOST, "Unable to open SPI device: %s\n", strerror (errno)) ;

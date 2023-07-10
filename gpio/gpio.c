@@ -374,6 +374,7 @@ static void doI2Cdetect (UNU int argc, char *argv [])
     return ;
   }
 
+  if( AW_select() < 0 )
   if (!moduleLoaded ("i2c_dev"))
   {
     fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
@@ -1195,11 +1196,11 @@ void doPwm (int argc, char *argv [])
 {
   int pin, val, freq;
 
-  // if (argc != 4)
-  // {
-  //   fprintf (stderr, "Usage: %s pwm <pin> <value>\n", argv [0]) ;
-  //   exit (1) ;
-  // }
+  if (argc != 5)
+  {
+    fprintf (stderr, "Usage: %s pwm [wpipin] [range] [freq] \n", argv [0]) ;
+    exit (1) ;
+  }
 
   pin = atoi (argv [2]) ;
 
@@ -1213,11 +1214,11 @@ void doPwmt (int argc, char *argv [])
 {
   int pin, val1, val2;
 
-  // if (argc != 4)
-  // {
-  //   fprintf (stderr, "Usage: %s pwm <pin> <value>\n", argv [0]) ;
-  //   exit (1) ;
-  // }
+  if (argc != 5)
+  {
+    fprintf (stderr, "Usage: %s pwm [wpipin] [high_time] [period_time]\n", argv [0]) ;
+    exit (1) ;
+  }
 
   pin = atoi (argv [2]) ;
 
