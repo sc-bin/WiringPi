@@ -67,14 +67,21 @@ char **Board_get_physName()
         return RPI_get_physName();
 }
 
-int Board_get_pin_count()
+int Board_get_pin_head_count()
 {
     Board_select();
     if (FLAG_Board_IS == BOARD_IS_AW)
-        return AW_get_pin_count();
+        return AW_get_pin_head_count();
     else
-        return RPI_get_pin_count();
-    
+        return RPI_get_pin_head_count();
+}
+int Board_get_pin_hw_count()
+{
+    Board_select();
+    if (FLAG_Board_IS == BOARD_IS_AW)
+        return AW_get_pin_hw_count();
+    else
+        return -1;
 }
 char **Board_get_altsName()
 {

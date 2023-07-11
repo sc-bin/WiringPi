@@ -1446,7 +1446,7 @@ int wiringPiSetupSys (void)
 //	the 'value' interface to speed things up for later
 
 
-    for (pin = 1 ; pin <= Board_get_pin_count() ; ++pin)
+    for (pin = 1 ; pin <= Board_get_pin_head_count() ; ++pin)
 	  {
       sprintf (fName, "/sys/class/gpio/gpio%d/value", pinToGpio[pin]) ;
       sysFds [pin] = open (fName, O_RDWR) ;

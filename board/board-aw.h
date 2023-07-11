@@ -11,7 +11,8 @@ extern char **AW_get_physName();
 extern char **AW_get_alts();
 
 
-extern int AW_get_pin_count(); //返回当前板子有几个引脚
+extern int AW_get_pin_head_count(); //返回主排针有几个引脚
+extern int AW_get_pin_hw_count(); //返回板上连接到其他外设的io的数量
 extern void AW_print_Version();
 
 

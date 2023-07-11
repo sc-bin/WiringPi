@@ -47,7 +47,7 @@ extern int *RPI_get_physToWpi();
 extern char **RPI_get_physName();
 extern char **RPI_get_alts();
 
-extern int RPI_get_pin_count(); //返回当前板子有几个引脚
+extern int RPI_get_pin_head_count(); //返回当前板子有几个引脚
 
 extern void RPI_get_model(int *model, int *rev);
 extern void RPI_print_Version();

@@ -21,7 +21,8 @@ extern int *Board_get_pinToGpio();
 extern int *Board_get_physToGpio();
 extern int *Board_get_physToWpi();
 extern char **Board_get_physName();
-extern int Board_get_pin_count(); //返回当前板子有几个引脚
+extern int Board_get_pin_head_count(); //返回当前板子主排针有几个引脚
+int Board_get_pin_hw_count();
 extern char **Board_get_altsName();
 
 

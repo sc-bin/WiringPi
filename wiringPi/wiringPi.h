@@ -181,6 +181,7 @@ extern int  wiringPiSetupSys    (void) ;
 extern int  wiringPiSetupGpio   (void) ;
 extern int  wiringPiSetupPhys   (void) ;
 
+extern          int  getAlt              (int pin) ;
 extern          void pinModeAlt          (int pin, int mode) ;
 extern          void pinMode             (int pin, int mode) ;
 extern          void pullUpDnControl     (int pin, int pud) ;
@@ -190,8 +191,6 @@ extern          void digitalWrite        (int pin, int value) ;
 // extern          void digitalWrite8       (int pin, int value) ;
 extern          void pwmWrite            (int pin, int value, int freq) ;
 extern          void pwmWritet            (int pin, int high_time, int period_time) ;
-extern          int  analogRead          (int pin) ;
-extern          void analogWrite         (int pin, int value) ;
 
 // PiFace specifics
 //	(Deprecated)
@@ -201,17 +200,8 @@ extern          void analogWrite         (int pin, int value) ;
 
 // On-Board Raspberry Pi hardware specific stuff
 
-extern          int  piGpioLayout        (void) ;
-extern          int  piBoardRev          (void) ;	// Deprecated
 extern          int  wpiPinToGpio        (int wpiPin) ;
 extern          int  physPinToGpio       (int physPin) ;
-extern          void setPadDrive         (int group, int value) ;
-extern          int  getAlt              (int pin) ;
-extern          void pwmToneWrite        (int pin, int freq) ;
-extern          void pwmSetMode          (int mode) ;
-extern          void pwmSetRange         (unsigned int range) ;
-extern          void pwmSetClock         (int divisor) ;
-extern          void gpioClockSet        (int pin, int freq) ;
 extern unsigned int  digitalReadByte     (void) ;
 extern unsigned int  digitalReadByte2    (void) ;
 extern          void digitalWriteByte    (int value) ;
@@ -248,12 +238,16 @@ extern int *physToGpio ;
 #define	ENV_CODES	"WIRINGPI_CODES"
 
 // only in raspberry
+extern          void setPadDrive         (int group, int value) ;
+extern          int  piBoardRev          (void) ;	// Deprecated
+extern          int  piGpioLayout        (void) ;
 extern          void pwmToneWrite        (int pin, int freq) ;
 extern          void pwmSetMode          (int mode) ;
 extern          void pwmSetRange         (unsigned int range) ;
 extern          void pwmSetClock         (int divisor) ;
 extern          void gpioClockSet        (int pin, int freq) ;
-
+extern          int  analogRead          (int pin) ;
+extern          void analogWrite         (int pin, int value) ;
 
 #ifdef __cplusplus
 }

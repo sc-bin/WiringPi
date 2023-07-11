@@ -434,7 +434,7 @@ int *RPI_get_physToWpi()
     return physToWpi ;
 }
 
-int RPI_get_pin_count()
+int RPI_get_pin_head_count()
 {
     return 64;
 }

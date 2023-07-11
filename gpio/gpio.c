@@ -75,18 +75,43 @@ char *usage = "Usage: gpio -v\n"
 	      "       gpio unexportall/exports\n"
 	      "       gpio export/edge/unexport ...\n"
 	      "       gpio wfi <pin> <mode>\n"
-	      "       gpio drive <group> <value>\n"
+	      // "       gpio drive <group> <value>\n"
 	      "       gpio pwm-bal/pwm-ms \n"
 	      "       gpio pwmr <range> \n"
 	      "       gpio pwmc <divider> \n"
-	      "       gpio load spi/i2c\n"
-	      "       gpio unload spi/i2c\n"
+	      // "       gpio load spi/i2c\n"
+	      // "       gpio unload spi/i2c\n"
 	      "       gpio i2cd/i2cdetect\n"
 	      "       gpio rbx/rbd\n"
 	      "       gpio wb <value>\n"
 	      "       gpio usbp high/low\n"
-	      "       gpio gbr <channel>\n"
-	      "       gpio gbw <channel> <value>" ;	// No trailing newline needed here.
+	      // "       gpio gbr <channel>\n"
+	      // "       gpio gbw <channel> <value>" ;	// No trailing newline needed here.
+;
+// char *usage = "Usage: gpio -v\n"
+//               "       gpio -h\n"
+//               "       gpio [-g|-1] ...\n"
+//               "       gpio [-d] ...\n"
+//               "       [-x extension:params] [[ -x ...]] ...\n"
+//               "       gpio [-p] <read/write/wb> ...\n"
+//               "       gpio <mode/read/write/aread/awritewb/pwm/pwmTone/clock> ...\n"
+//               "       gpio <toggle/blink> <pin>\n"
+// 	      "       gpio readall\n"
+// 	      "       gpio unexportall/exports\n"
+// 	      "       gpio export/edge/unexport ...\n"
+// 	      "       gpio wfi <pin> <mode>\n"
+// 	      "       gpio drive <group> <value>\n"
+// 	      "       gpio pwm-bal/pwm-ms \n"
+// 	      "       gpio pwmr <range> \n"
+// 	      "       gpio pwmc <divider> \n"
+// 	      "       gpio load spi/i2c\n"
+// 	      "       gpio unload spi/i2c\n"
+// 	      "       gpio i2cd/i2cdetect\n"
+// 	      "       gpio rbx/rbd\n"
+// 	      "       gpio wb <value>\n"
+// 	      "       gpio usbp high/low\n"
+// 	      "       gpio gbr <channel>\n"
+// 	      "       gpio gbw <channel> <value>" ;	// No trailing newline needed here.
 
 
 #ifdef	NOT_FOR_NOW
@@ -403,7 +428,7 @@ static void doExports (UNU int argc, UNU char *argv [])
   char buf [16] ;
 
   int *gpio_list = Board_get_physToGpio();
-  int gpio_count = Board_get_pin_count();
+  int gpio_count = Board_get_pin_head_count();
   for (first = 0, i = 0 ; i < gpio_count ; ++i)	// Crude, but effective
   {
 // Try to read the direction
@@ -703,7 +728,7 @@ void doUnexportall (char *progName)
   FILE *fd ;
   int pin ;
   int *gpio_list = Board_get_physToGpio();
-  int gpio_count = Board_get_pin_count();
+  int gpio_count = Board_get_pin_head_count();
   for (pin = 0 ; pin < gpio_count ; ++pin)
   {
     if ((fd = fopen ("/sys/class/gpio/unexport", "w")) == NULL)

@@ -16,9 +16,10 @@ static char *alts [] =
 int pinToGpio_1B [64] =
 {
   73, 
-  74,   75, 267,    268,    78, 79, 72, 264,    263,262,
-  233,  231, 232,   230,    261, 262, -1, -1,   -1,  -1,
-  256,  257, 258,   259,    260, 272, 271,269, 270, 266
+  74,   75, 267,    268, 78,    79, 72, 264,    263,262,
+  233,  231, 232,   230, 261,   262, -1, -1,   -1,  -1,
+  256,  257, 258,   259, 260,   272, 271,269, 270, 266,
+  -1,   76,  77,
 
 
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   // ... 47
@@ -30,14 +31,14 @@ int physToWpi_1B [64] =
 	-1, -1, 	  // 1, 2
 	 8, -1,
 	 9, -1, 	  
-	 7,  15, 	  //7, 8
-	-1,  16, 	  
+	 7, 15, 	  //7, 8
+	-1, 16, 	  
 	 0,  1, 	  //11, 12
 	 2, -1, 	  
 	 3,  4, 	  //15, 16
-	-1, 5, 	  
+	-1,  5, 	  
 	12, -1, 	  //19, 20
-	13, 6, 	  
+	13,  6, 	  
 	14, 10, 	  //23, 24
 	-1, 11, 	  // 25, 26
 	30, 31,
@@ -47,6 +48,7 @@ int physToWpi_1B [64] =
 	24, 27,
     25, 28,
     -1, 29,
+    32, 33,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   // ... 56
 	-1,  // ... 63
 
@@ -77,6 +79,7 @@ int physToGpio_1B [64] =
 	259, 271,
 	260, 269,
 	-1, 270,
+    76, 77,
 
 
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   // ... 56
@@ -95,7 +98,7 @@ char *physName_1B [64] =
  "     GND", "RXD.2   ",
  "     PC9", "PC10    ",
  "    PC11", "GND     ",
- "    PI11", "PI12    ",
+ "    PWM1", "PWM2    ",
  "    3.3V", "PC14    ",
  "  MOSI.1", "GND     ",
  "  MISO.1", "PC15    ",
@@ -106,10 +109,10 @@ char *physName_1B [64] =
  "     PI1", "PI16    ",
  "     PI2", "GND     ",
  "     PI3", "PI15    ",
- "     PI4", "PI13    ",
- "     GND", "PI14    ",
+ "     PI4", "TX4     ",
+ "     GND", "RX4     ",
+ "     KEY", "LED     ",
 
-       NULL, NULL,
        NULL, NULL,
        NULL, NULL,
        NULL, NULL,
@@ -128,7 +131,8 @@ struct BOARD_ONE
     char *name;
     char *model_value;
     int men_size;
-    int pin_count;  
+    int pin_head_count;  
+    int pin_hw_count;  
 
     int max_pwm;
     int *pwmToGpio;
@@ -148,8 +152,8 @@ struct BOARD_ONE pi_boards[] = {
         .name = "核桃派",
         .model_value = "01-1b",
         .men_size = 1024,
-        .pin_count = 40,
-
+        .pin_head_count = 40,
+        .pin_hw_count = 2,
         .max_pwm = 4,
         .pwmToGpio = pwmToGpio_1B,
         .physName = physName_1B,
@@ -212,9 +216,13 @@ int *AW_get_physToWpi()
 {
     return PI_BOARD->physToWpi;
 }
-int AW_get_pin_count()
+int AW_get_pin_head_count()
 {
-    return PI_BOARD->pin_count;
+    return PI_BOARD->pin_head_count;
+}
+int AW_get_pin_hw_count()
+{
+    return PI_BOARD->pin_hw_count;
 }
 char **AW_get_physName()
 {

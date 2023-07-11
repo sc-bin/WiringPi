@@ -88,9 +88,9 @@ static void readallPhys(int physPin)
   int *phy2wpi = Board_get_physToWpi();
   char **physname = Board_get_physName();
   if (phy2gpio[physPin] < 0)
-    printf(" |     |    ");
+    printf(" |      |    ");
   else
-    printf(" | %3d | %3d", phy2gpio[physPin], phy2wpi[physPin]);
+    printf(" |  %3d | %3d", phy2gpio[physPin], phy2wpi[physPin]);
 
   printf(" | %s", physname[physPin]);
 
@@ -135,9 +135,9 @@ static void readallPhys(int physPin)
   printf(" | %-5s", physname[physPin]);
 
   if (phy2gpio[physPin] < 0)
-    printf(" |     |    ");
+    printf(" |     |     ");
   else
-    printf(" | %-3d | %-3d", phy2wpi[physPin], phy2gpio[physPin]);
+    printf(" | %-3d | %-3d ", phy2wpi[physPin], phy2gpio[physPin]);
 
   printf(" |\n");
 }
@@ -156,7 +156,7 @@ static void allReadall(void)
   printf("| Pin | Mode | Value |      | Pin | Mode | Value |\n");
   printf("+-----+------+-------+      +-----+------+-------+\n");
 
-  int pin_count = Board_get_pin_count() / 2;
+  int pin_count = Board_get_pin_head_count() / 2;
   int *gpio = Board_get_physToGpio();
   for (int i = 0; i < pin_count; ++i)
   {
@@ -264,12 +264,25 @@ static void aw_readall()
   printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
 
-  for (pin = 1; pin <= Board_get_pin_count(); pin += 2)
+  for (pin = 1; pin <= Board_get_pin_head_count(); pin += 2)
     readallPhys(pin);
+
+  printf(" |      |     |          |      |   |          |   |      |          |     |      |\n");
+  printf(" |      |     |          |      |   |          |   |      |          |     |      |\n");
+
+  // printf("\r\n");
+  // printf("\r\n");
+
+ for (pin = 1; pin <= Board_get_pin_hw_count(); pin += 2)
+    readallPhys(Board_get_pin_head_count() + pin);
+  // printf("\r\n");
+  printf(" |      |     |          |      |   |          |   |      |          |     |      |\n");
 
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
   printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
+
+  printf("\r\n");
 }
 
 /*
