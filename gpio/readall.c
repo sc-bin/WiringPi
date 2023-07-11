@@ -266,21 +266,22 @@ static void aw_readall()
 
   for (pin = 1; pin <= Board_get_pin_head_count(); pin += 2)
     readallPhys(pin);
+  printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
+  // printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
+  // printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
 
-  printf(" |      |     |          |      |   |          |   |      |          |     |      |\n");
-  printf(" |      |     |          |      |   |          |   |      |          |     |      |\n");
-
-  // printf("\r\n");
-  // printf("\r\n");
-
- for (pin = 1; pin <= Board_get_pin_hw_count(); pin += 2)
-    readallPhys(Board_get_pin_head_count() + pin);
-  // printf("\r\n");
-  printf(" |      |     |          |      |   |          |   |      |          |     |      |\n");
-
+  printf("\r\n");
+  printf("\r\n");
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
   printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
+ for (pin = 1; pin <= Board_get_pin_hw_count(); pin += 2)
+    readallPhys(Board_get_pin_head_count() + pin);
+  // printf(" |      |     |          |      |   |    ||    |   |      |          |     |      |\n");
+
+  printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
+  // printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
+  // printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
 
   printf("\r\n");
 }
