@@ -341,13 +341,13 @@ void dopinfun(int argc, char *argv[])
     if (name[i] == NULL)
       printf(" |   - |   ----   |  --  | %2d |", i);
     else
-      printf(" |\033[30;42m %3d |  %6s  | %s | %2d \033[37;40m|", phy2wpi[i], name[i], alts[i], i);
+      printf(" |\033[30;42m %3d |  %6s  | %s | %2d \033[0m|", phy2wpi[i], name[i], alts[i], i);
 
     i++;
     if (name[i] == NULL)
       printf("| %-2d |  --  |   ----   | -   |", i);
     else
-      printf("|\033[30;42m %-2d | %s |  %-6s  | %-3d \033[37;40m|", i, alts[i], name[i], phy2wpi[i]);
+      printf("|\033[30;42m %-2d | %s |  %-6s  | %-3d \033[0m|", i, alts[i], name[i], phy2wpi[i]);
 
     printf("\r\n");
   }

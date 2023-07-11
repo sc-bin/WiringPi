@@ -79,10 +79,10 @@ int physToGpio_1B [64] =
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   // ... 56
   -1, -1, -1, -1,  // ... 63
 } ;
-#define COLOR_3V3_L     "\033[37;41m    3.3V\033[37;40m"
-#define COLOR_5V_R      "\033[37;41m5V      \033[37;40m"
-#define COLOR_GND_L     "\033[30;47m     GND\033[37;40m"
-#define COLOR_GND_R     "\033[30;47mGND     \033[37;40m"
+#define COLOR_3V3_L     "\033[37;41m    3.3V\033[0m"
+#define COLOR_5V_R      "\033[37;41m5V      \033[0m"
+#define COLOR_GND_L     "\033[30;47m     GND\033[0m"
+#define COLOR_GND_R     "\033[30;47mGND     \033[0m"
 
 char *physName_1B [64] = 
 {
@@ -95,7 +95,7 @@ COLOR_3V3_L, COLOR_5V_R,
 COLOR_GND_L, "RXD.2   ",
  "     PC9", "PC10    ",
  "    PC11", COLOR_GND_R,
- "    PWM1", "PWM2    ",
+ "    PI11", "PI12    ",
 COLOR_3V3_L, "PC14    ",
  "  MOSI.1", COLOR_GND_R,
  "  MISO.1", "PC15    ",
@@ -106,8 +106,8 @@ COLOR_GND_L, "CS1.1   ",
  "     PI1", "PI16    ",
  "     PI2", COLOR_GND_R,
  "     PI3", "PI15    ",
- "     PI4", "TX4     ",
-COLOR_GND_L, "RX4     ",
+ "     PI4", "PI13    ",
+COLOR_GND_L, "PI14    ",
  "     KEY", "LED     ",
 
        NULL, NULL,
@@ -121,6 +121,44 @@ COLOR_GND_L, "RX4     ",
        NULL, NULL,
        NULL, NULL, 
 };
+
+// char *physName_1B [64] = 
+// {
+//   	   NULL,
+
+// COLOR_3V3_L, COLOR_5V_R,
+//  "   SDA.1", COLOR_5V_R,
+//  "   SCL.1", COLOR_GND_R,
+//  "     PC8", "TXD.2   ",
+// COLOR_GND_L, "RXD.2   ",
+//  "     PC9", "PC10    ",
+//  "    PC11", COLOR_GND_R,
+//  "    PWM1", "PWM2    ",
+// COLOR_3V3_L, "PC14    ",
+//  "  MOSI.1", COLOR_GND_R,
+//  "  MISO.1", "PC15    ",
+//  "  SCLK.1", "CS1.0   ",
+// COLOR_GND_L, "CS1.1   ",
+//  "   SDA.2", "SCL.2   ",
+//  "     PI0", COLOR_GND_R,
+//  "     PI1", "PI16    ",
+//  "     PI2", COLOR_GND_R,
+//  "     PI3", "PI15    ",
+//  "     PI4", "TX4     ",
+// COLOR_GND_L, "RX4     ",
+//  "     KEY", "LED     ",
+
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL,
+//        NULL, NULL, 
+// };
 
 
 char *pwm_name_1b[]={
