@@ -275,17 +275,83 @@ static void aw_readall()
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
   printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
- for (pin = 1; pin <= Board_get_pin_hw_count(); pin += 2)
+  for (pin = 1; pin <= Board_get_pin_hw_count(); pin += 2)
     readallPhys(Board_get_pin_head_count() + pin);
-  // printf(" |      |     |          |      |   |    ||    |   |      |          |     |      |\n");
 
   printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
-  // printf(" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode | Name     | wPi | GPIO |\n");
-  // printf(" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n");
 
   printf("\r\n");
 }
 
+void show_pwm_fun()
+{
+}
+void dopinfun(int argc, char *argv[])
+{
+  if (argc != 3)
+  {
+    printf("参数错误\r\n");
+    exit(-1);
+  }
+
+  int fun = 0;
+  if (strcasecmp(argv[2], "pwm") == 0)
+    fun = 0;
+  else if (strcasecmp(argv[2], "uart") == 0)
+    fun = 1;
+  else if (strcasecmp(argv[2], "i2c") == 0)
+    fun = 2;
+  else if (strcasecmp(argv[2], "spi") == 0)
+    fun = 3;
+  else
+    return;
+
+  int *phy2wpi = Board_get_physToWpi();
+  char **name = NULL;
+  char **alts = NULL;
+  switch (fun)
+  {
+  case 0:
+    name = AW_get_pwm_name();
+    alts = AW_get_pwm_alts();
+    break;
+  case 1:
+    name = AW_get_uart_name();
+    alts = AW_get_uart_alts();
+    break;
+    
+  case 2:
+    name = AW_get_i2c_name();
+    alts = AW_get_i2c_alts();
+    break;
+  case 3:
+    name = AW_get_spi_name();
+    alts = AW_get_spi_alts();
+    break;
+
+  }
+
+  printf(" +-----+----------+------+----++----+------+----------+-----+\n");
+  printf(" | wPi |   Name   | Altn | Physical | Altn |   Name   | wPi |\n");
+  printf(" +-----+----------+------+----++----+------+----------+-----+\n");
+  for (int i = 1; i < Board_get_pin_head_count(); i++)
+  {
+    // printf("")
+
+    if (name[i] == NULL)
+      printf(" |   - |   ----   |  --  | %2d |", i);
+    else
+      printf(" |\033[30;42m %3d |  %6s  | %s | %2d \033[37;40m|", phy2wpi[i], name[i], alts[i], i);
+
+    i++;
+    if (name[i] == NULL)
+      printf("| %-2d |  --  |   ----   | -   |", i);
+    else
+      printf("|\033[30;42m %-2d | %s |  %-6s  | %-3d \033[37;40m|", i, alts[i], name[i], phy2wpi[i]);
+
+    printf("\r\n");
+  }
+}
 /*
  * doReadall:
  *	Generic read all pins called from main program. Works out the Pi type

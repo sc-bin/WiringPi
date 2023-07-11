@@ -48,6 +48,8 @@ extern int wiringPiDebug ;
 // External functions I can't be bothered creating a separate .h file for:
 
 extern void doReadall    (void) ;
+extern void dopinfun      (int argc, char *argv []) ;
+
 extern void doAllReadall (void) ;
 extern void doQmode      (int argc, char *argv []) ;
 
@@ -1548,6 +1550,7 @@ int main (int argc, char *argv [])
   else if (strcasecmp (argv [1], "drive"    ) == 0) doPadDrive   (argc, argv) ;
   else if (strcasecmp (argv [1], "readall"  ) == 0) doReadall    () ;
   else if (strcasecmp (argv [1], "nreadall" ) == 0) doReadall    () ;
+  else if (strcasecmp (argv [1], "pin"    ) == 0) dopinfun     (argc, argv) ;
   else if (strcasecmp (argv [1], "pins"     ) == 0) doReadall    () ;
   else if (strcasecmp (argv [1], "qmode"    ) == 0) doQmode      (argc, argv) ;
   else if (strcasecmp (argv [1], "i2cdetect") == 0) doI2Cdetect  (argc, argv) ;

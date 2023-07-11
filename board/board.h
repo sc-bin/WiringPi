@@ -26,6 +26,7 @@ int Board_get_pin_hw_count();
 extern char **Board_get_altsName();
 
 
+
 void Board_print_Version();
 extern int Board_get_GpioBase();
 

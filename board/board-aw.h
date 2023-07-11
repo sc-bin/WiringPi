@@ -18,9 +18,21 @@ extern void AW_print_Version();
 
 extern int AW_get_mem_gpioA();
 extern int AW_get_mem_gpioL();
-
 extern int AW_get_mem_PWM();
-// extern void AW_get_max_HWpwm(); //最大的硬件pwm编号
-// extern int *AW_get_pwmToGpio();
+
+
+extern char **AW_get_pwm_name();
+extern char **AW_get_pwm_alts();
+
+extern char **AW_get_uart_name();
+extern char **AW_get_uart_alts();
+
+extern char **AW_get_i2c_name();
+extern char **AW_get_i2c_alts();
+
+extern char **AW_get_spi_name();
+extern char **AW_get_spi_alts();
+
+
 
 #endif
