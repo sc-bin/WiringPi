@@ -789,7 +789,7 @@ void doMode (int argc, char *argv [])
   else if (strcasecmp (mode, "up")      == 0) pullUpDnControl (pin, PUD_UP) ;
   else if (strcasecmp (mode, "down")    == 0) pullUpDnControl (pin, PUD_DOWN) ;
   else if (strcasecmp (mode, "tri")     == 0) pullUpDnControl (pin, PUD_OFF) ;
-  else if (strcasecmp (mode, "off")     == 0) pullUpDnControl (pin, PUD_OFF) ;
+  else if (strcasecmp (mode, "off")     == 0) pinModeAlt (pin, 7) ;
   else if (strcasecmp (mode, "alt0")    == 0) pinModeAlt (pin, 0) ;
   else if (strcasecmp (mode, "alt1")    == 0) pinModeAlt (pin, 1) ;
   else if (strcasecmp (mode, "alt2")    == 0) pinModeAlt (pin, 2) ;
