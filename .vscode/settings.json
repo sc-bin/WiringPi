@@ -16,6 +16,7 @@
         "wait.h": "c",
         "time.h": "c",
         "pthread.h": "c",
-        "softpwm.h": "c"
+        "softpwm.h": "c",
+        "stdarg.h": "c"
     }
 }

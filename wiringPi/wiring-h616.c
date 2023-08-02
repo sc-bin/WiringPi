@@ -22,9 +22,14 @@
 #include "softPwm.h"
 #include "softTone.h"
 
-#include "wiring-allwinner.h"
+#include "wiring-h616.h"
 #include "../board/board.h"
 #include "wiringPi.h"
+
+
+#define MEN_GPIOA_BASE 0x0300B000
+#define MEN_GPIOL_BASE 0x07022000
+#define MEN_PWM_BASE 0x0300A000
 
 int pwmmode = 1;
 uint32_t MAP_MASK = 0Xfff;
@@ -315,8 +320,8 @@ void SUNXI_init()
         exit(-1);
     }
 
-    mmap_gpio = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, AW_get_mem_gpioA());
-    mmap_pwm = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, AW_get_mem_PWM());
+    mmap_gpio = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, MEN_GPIOA_BASE);
+    mmap_pwm = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, MEN_PWM_BASE);
     wiringPiMode = WPI_MODE_PINS;
 
     sunxi_pwm_init();
@@ -355,18 +360,18 @@ unsigned int read_mem_gpio(unsigned int addr)
     return val;
 }
 
-void SUNXI_gpio_write(int pin, int value)
+void SUNXI_gpio_write(int gpio_num, int value)
 {
-    unsigned int bank = pin >> 5;
-    unsigned int index = pin - (bank << 5);
+    unsigned int bank = gpio_num >> 5;
+    unsigned int index = gpio_num - (bank << 5);
     unsigned int phyaddr = 0;
 
     unsigned int regval = 0;
 
     if (bank == 11)
-        phyaddr = AW_get_mem_gpioL() + 0x10;
+        phyaddr = MEN_GPIOL_BASE + 0x10;
     else
-        phyaddr = AW_get_mem_gpioA() + (bank * 36) + 0x10;
+        phyaddr = MEN_GPIOA_BASE + (bank * 36) + 0x10;
 
     regval = read_mem_gpio(phyaddr);
     if (wiringPiDebug)
@@ -399,9 +404,9 @@ int SUNXI_gpio_read(int gpio_num)
     unsigned int phyaddr;
 
     if (bank == 11)
-        phyaddr = AW_get_mem_gpioL() + 0x10;
+        phyaddr = MEN_GPIOL_BASE + 0x10;
     else
-        phyaddr = AW_get_mem_gpioA() + (bank * 36) + 0x10;
+        phyaddr = MEN_GPIOA_BASE + (bank * 36) + 0x10;
 
     if (read_mem_gpio(phyaddr) & GPIO_BIT(index)) /* Input */
         val = (read_mem_gpio(phyaddr) & GPIO_BIT(index)) ? 1 : 0;
@@ -422,10 +427,10 @@ void SUNXI_pin_set_mode(int gpio_num, int mode)
 
     if (bank == 11)
     {
-        phyaddr = AW_get_mem_gpioL() + ((index >> 3) << 2);
+        phyaddr = MEN_GPIOL_BASE + ((index >> 3) << 2);
     }
     else
-        phyaddr = AW_get_mem_gpioA() + (bank * 36) + ((index >> 3) << 2);
+        phyaddr = MEN_GPIOA_BASE + (bank * 36) + ((index >> 3) << 2);
 
     regval = read_mem_gpio(phyaddr);
     if (wiringPiDebug)
@@ -466,17 +471,15 @@ int SUNXI_pin_get_alt(int gpio_num)
     unsigned int index = gpio_num - (bank << 5);
     unsigned int phyaddr = 0;
     unsigned char mode = -1;
-    uint32_t GPIOA_BASE = AW_get_mem_gpioA();
-    uint32_t GPIOL_BASE = AW_get_mem_gpioL();
 
     int offset = ((index - ((index >> 3) << 3)) << 2);
     // printf("\r\nbank=%d\r\n",bank);
     if (bank == 11)
     {
-        phyaddr = GPIOL_BASE + ((index >> 3) << 2);
+        phyaddr = MEN_GPIOL_BASE + ((index >> 3) << 2);
     }
     else
-        phyaddr = GPIOA_BASE + (bank * 36) + ((index >> 3) << 2);
+        phyaddr = MEN_GPIOA_BASE + (bank * 36) + ((index >> 3) << 2);
 
     // printf("phyaddr=%x\r\n", phyaddr);
     regval = read_mem_gpio(phyaddr);
@@ -494,8 +497,6 @@ void SUNXI_gpio_set_PullUpDn(int gpio_num, int pud)
     unsigned int phyaddr = 0;
     unsigned int bit_value = -1, bit_enable = 0;
     unsigned int offset;
-    uint32_t GPIOA_BASE = AW_get_mem_gpioA();
-    uint32_t GPIOL_BASE = AW_get_mem_gpioL();
 
     unsigned int pullOffset = 0x1C;
     switch (pud)
@@ -520,10 +521,10 @@ void SUNXI_gpio_set_PullUpDn(int gpio_num, int pud)
 
     if (bank == 11)
     {
-        phyaddr = pullOffset + GPIOL_BASE + ((index >> 4) << 2);
+        phyaddr = pullOffset + MEN_GPIOL_BASE + ((index >> 4) << 2);
     }
     else
-        phyaddr = pullOffset + GPIOA_BASE + (bank * 36) + ((index >> 4) << 2);
+        phyaddr = pullOffset + MEN_GPIOA_BASE + (bank * 36) + ((index >> 4) << 2);
 
     regval = read_mem_gpio(phyaddr);
     if (wiringPiDebug)
@@ -549,13 +550,11 @@ void SUNXI_pin_set_alt(int gpio_num, int mode)
     unsigned int index = gpio_num - (bank << 5);
     unsigned int phyaddr = 0;
     int offset = ((index - ((index >> 3) << 3)) << 2);
-    uint32_t GPIOA_BASE = AW_get_mem_gpioA();
-    uint32_t GPIOL_BASE = AW_get_mem_gpioL();
 
     if (bank == 11)
-        phyaddr = GPIOL_BASE + ((index >> 3) << 2);
+        phyaddr = MEN_GPIOL_BASE + ((index >> 3) << 2);
     else
-        phyaddr = GPIOA_BASE + (bank * 36) + ((index >> 3) << 2);
+        phyaddr = MEN_GPIOA_BASE + (bank * 36) + ((index >> 3) << 2);
 
     regval = read_mem_gpio(phyaddr);
     regval &= ~(7 << offset);

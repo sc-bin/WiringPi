@@ -62,7 +62,7 @@ SRC	=	wiringPi.c						\
 		drcSerial.c drcNet.c					\
 		pseudoPins.c						\
 		wpiExtensions.c				\
-		wiring-allwinner.c			\
+		wiring-h616.c			\
 		wiring-rpi.c				\
 		../board/board.c			\
 		../board/board-aw.c			\

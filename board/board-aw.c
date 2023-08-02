@@ -220,8 +220,7 @@ struct BOARD_ONE
     int *physToGpio;
     int *physToWpi;
 
-    uint32_t mem_gpioA;
-    uint32_t mem_gpioL;
+
     uint32_t mem_PWM;
 
     int pwm_count;
@@ -253,7 +252,7 @@ struct BOARD_ONE
 struct BOARD_ONE pi_boards[] = {
     {
         .name = "核桃派",
-        .model_value = "01-1b",
+        .model_value = "walnutpi-1b",
         .men_size = 1024,
         .pin_head_count = 40,
         .pin_hw_count = 2,
@@ -265,9 +264,6 @@ struct BOARD_ONE pi_boards[] = {
         .physToGpio = physToGpio_1B,
         .physToWpi = physToWpi_1B,
 
-        .mem_gpioA  = 0x0300B000,
-        .mem_gpioL  = 0x07022000,
-        .mem_PWM    = 0x0300A000,
 
         .pwm_count = 4,
         .pwmnames = pwm_name_1b,
@@ -363,19 +359,8 @@ void AW_print_Version()
     printf("Board:\t%s\n\r\n",PI_BOARD->name);
 
 }
-int AW_get_mem_gpioA()
-{
-    return PI_BOARD->mem_gpioA;
-}
-int AW_get_mem_gpioL()
-{
-    return PI_BOARD->mem_gpioL;
-}
 
-int AW_get_mem_PWM()
-{
-    return PI_BOARD->mem_PWM;
-}
+
 
 char *pwmnNames[64]; 
 char *pwmnalts[64]; 

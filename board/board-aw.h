@@ -16,9 +16,6 @@ extern int AW_get_pin_hw_count(); //返回板上连接到其他外设的io的数
 extern void AW_print_Version();
 
 
-extern int AW_get_mem_gpioA();
-extern int AW_get_mem_gpioL();
-extern int AW_get_mem_PWM();
 
 
 extern char **AW_get_pwm_name();
