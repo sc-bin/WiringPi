@@ -17,6 +17,8 @@
         "time.h": "c",
         "pthread.h": "c",
         "softpwm.h": "c",
-        "stdarg.h": "c"
+        "stdarg.h": "c",
+        "wiring-rpi.h": "c",
+        "wiring-h616.h": "c"
     }
 }

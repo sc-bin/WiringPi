@@ -77,7 +77,7 @@
 #include "wiringPi.h"
 #include "../version.h"
 #include "../board/board.h"
-#include "wiring-allwinner.h"
+#include "wiring-h616.h"
 #include "wiring-rpi.h"
 // Environment Variables
 
