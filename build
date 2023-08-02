@@ -108,7 +108,7 @@ fi
   echo "====================="
   echo
 
-  hardware=`fgrep Hardware /proc/cpuinfo | head -1 | awk '{ print $3 }'`
+  # hardware=`fgrep Hardware /proc/cpuinfo | head -1 | awk '{ print $3 }'`
 
   echo
   echo "WiringPi Library"
