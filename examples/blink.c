@@ -27,7 +27,7 @@
 #include <wiringPi.h>
 
 
-#define	LED	9
+#define	LED	33
 
 int main (void)
 {

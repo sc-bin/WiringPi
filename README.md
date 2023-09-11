@@ -1,6 +1,6 @@
 项目说明
 =================================
-本项目是在[WiringPi](https://github.com/WiringPi/WiringPi)的基础上修改而来。目前仅在核桃派上测试通过，树莓派上使用可能存在未知bug。
+本项目是在[WiringPi](https://github.com/WiringPi/WiringPi)的基础上修改而来。
 
 安装本项目到开发板上
 ========
@@ -8,7 +8,7 @@
 ```
 git clone https://github.com/sc-bin/WiringPi.git
 ```
-2. 进入文件夹然后运行脚本，自动编译并安装到板子上
+2. 编译并安装到板子上
 ```
 cd WiringPi
 ./build 
@@ -117,6 +117,7 @@ gpio toggle 7
 
 硬件pwm-占空比控制
 ------
+
 ```
 gpio pwm [wpipin] [range] [freq] 
 ```

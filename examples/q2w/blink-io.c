@@ -26,7 +26,7 @@
 #include <wiringPi.h>
 #include <mcp23017.h>
 
-#define	LED		1
+#define	LED		33
 #define	Q2W_BASE	100
 
 int main (void)
