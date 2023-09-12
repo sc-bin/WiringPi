@@ -1,6 +1,6 @@
 项目说明
 =================================
-本项目是在[WiringPi](https://github.com/WiringPi/WiringPi)的基础上修改而来。
+本项目是在[WiringPi](https://github.com/WiringPi/WiringPi)的基础上修改而来。控制gpio的功能已经验证完成，其他拓展模块部分还有待测试。
 
 安装本项目到开发板上
 ========
@@ -14,9 +14,11 @@ cd WiringPi
 ./build 
 ```
 
-玩法一: gpio指令
-========
-安装完成后，在命令行可以输入以`gpio`开头的指令，实现对引脚的控制
+# c/c++编程
+可查看本项目的`examples`文件夹下的例程。
+
+# gpio指令
+在命令行可以输入以`gpio`开头的指令，实现对引脚的控制
 
 
 查看型号
@@ -123,11 +125,8 @@ gpio pwm [wpipin] [range] [freq]
 ```
 - `[wpipin]`是带硬件pwm的引脚的wpi编号
 - `[range]`是占空比，取值为0到1000
-- `[freq]`是期望的频率，
-1. pwm1的频率可以选择2到20k
-2. pwm2的频率可以选择2到20k，但若低于400，则pwm3也必须保持相同频率
-3. pwm3的频率可以选择2到20k，但若低于400，则pwm2也必须保持相同频率
-4. pwm4的频率可以选择400到20k
+- `[freq]`是期望的频率，400到20000
+
 
 比如我想输出一个频率1k,占空比千分之50的波形到硬件pwm1所在的3号引脚上,则在命令行输入如下指令
 ```
@@ -141,11 +140,7 @@ gpio pwmt  [wpipin] [high_time] [period_time]
 ```
 - `[wpipin]`是带硬件pwm的引脚的wpi编号
 - `[high_time]` 单个周期内高电平部分的时长，以us为单位，不能大于`[period_time]`
-- `[period_time]` 周期的长度，以us为单位
-1. pwm1的`[period_time]`可以选择1到50000us（50ms）
-2. pwm2的`[period_time]`可以选择1到50000us（50ms），但若高于2500（2.5ms），则pwm3也必须保持相同周期
-3. pwm3的`[period_time]`可以选择1到50000us（50ms），但若高于2500（2.5ms），则pwm2也必须保持相同周期
-4. pwm4的`[period_time]`可以选择1到2500（2.5ms）
+- `[period_time]` 周期的长度，以us为单位，1到500000，部分只能选择1到2500（walnutpi-1b的pwm4）
 
 比如我想输出一个周期20ms,高电平长1.5ms的波形来控制舵机,舵机连接在pwm1所在的3号引脚上,则在命令行输入如下指令
 ```
